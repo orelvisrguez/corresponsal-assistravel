@@ -9,8 +9,131 @@ export function formatDate(date: Date | string): string {
   return new Date(date).toLocaleDateString('es-ES')
 }
 
+/**
+ * Convierte texto a formato de oración (cada palabra con inicial mayúscula)
+ * Ejemplo: "HOLA MUNDO" -> "Hola Mundo"
+ * @param text - Texto a convertir
+ * @returns Texto formateado
+ */
+export function toSentenceCase(text: string): string {
+  if (!text || typeof text !== 'string') return text
+  
+  // Convertir todo a minúsculas primero
+  let result = text.toLowerCase()
+  
+  // Dividir en palabras y capitalizar la primera letra de cada palabra
+  result = result
+    .split(' ')
+    .map(word => {
+      if (word.length === 0) return word
+      // Manejar casos especiales como números de teléfono, emails, URLs
+      if (word.includes('@') || word.includes('.com') || /^\d/.test(word)) {
+        return word // No modificar números, emails o URLs
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
+  
+  return result
+}
+
+/**
+ * Formatea campos de nombre de corresponsal aplicándose formato de oración
+ * @param nombre - Nombre del corresponsal
+ * @returns Nombre formateado
+ */
+export function formatCorresponsalNombre(nombre: string): string {
+  return toSentenceCase(nombre)
+}
+
+/**
+ * Formatea nombre de país aplicando formato de oración
+ * @param pais - Nombre del país
+ * @returns País formateado
+ */
+export function formatPais(pais: string): string {
+  return toSentenceCase(pais)
+}
+
+/**
+ * Formatea nombre de contacto aplicando formato de oración
+ * @param nombreContacto - Nombre del contacto
+ * @returns Nombre de contacto formateado
+ */
+export function formatNombreContacto(nombreContacto: string): string {
+  return toSentenceCase(nombreContacto)
+}
+
+/**
+ * Formatea dirección aplicando formato de oración
+ * @param direccion - Dirección
+ * @returns Dirección formateada
+ */
+export function formatDireccion(direccion: string): string {
+  return toSentenceCase(direccion)
+}
+
 export function formatCurrency(amount: number | string, currency: string = 'USD'): string {
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
+  // Función auxiliar para convertir strings formateados a números
+  function parseFormattedNumber(value: any): number {
+    // Si es null, undefined o string vacío, retornar 0
+    if (value === null || value === undefined || value === '') {
+      return 0
+    }
+    
+    if (typeof value === 'number') {
+      return isFinite(value) ? value : 0
+    }
+    
+    if (typeof value === 'string') {
+      // Limpiar el string: eliminar espacios y caracteres no numéricos (excepto punto y coma)
+      let cleaned = value.trim().replace(/[^\d.,\-]/g, '')
+      
+      // Si el string está vacío después de limpiar, retornar 0
+      if (!cleaned) {
+        return 0
+      }
+      
+      // Detectar y manejar diferentes formatos de número
+      const lastComma = cleaned.lastIndexOf(',')
+      const lastPeriod = cleaned.lastIndexOf('.')
+      
+      // Si tiene tanto punto como coma, determinar cuál es el separador decimal
+      if (lastComma > -1 && lastPeriod > -1) {
+        if (lastComma > lastPeriod) {
+          // Español: 1.234.567,89 (coma decimal, punto miles)
+          cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+        } else {
+          // Inglés: 1,234,567.89 (punto decimal, coma miles)
+          cleaned = cleaned.replace(/,/g, '')
+        }
+      } else if (cleaned.includes(',')) {
+        // Solo coma - asumir que es separador decimal
+        cleaned = cleaned.replace(',', '.')
+      }
+      // Si solo tiene punto, asumir que es separador decimal (sin cambios)
+      
+      const num = parseFloat(cleaned)
+      
+      // Validar que el número es válido y razonable
+      if (!isFinite(num) || isNaN(num)) {
+        return 0
+      }
+      
+      // Si el número es demasiado grande (probablemente mal formateado), retornarlo tal como está
+      // pero con un límite razonable
+      if (Math.abs(num) > 1e15) { // Más de 1 cuatrillón probablemente es un error
+        console.warn(`Número potencialmente mal formateado detectado: ${value} -> ${num}`)
+        return 0 // Retornar 0 para evitar cálculos erróneos
+      }
+      
+      return num
+    }
+    
+    return 0
+  }
+  
+  const numAmount = parseFormattedNumber(amount)
   const formattedValue = new Intl.NumberFormat('es-ES', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
@@ -21,23 +144,23 @@ export function formatCurrency(amount: number | string, currency: string = 'USD'
 
 export function getEstadoInternoLabel(estado: string): string {
   const labels = {
-    ABIERTO: 'Abierto',
-    CERRADO: 'Cerrado',
-    PAUSADO: 'Pausado',
-    CANCELADO: 'Cancelado'
+    ABIERTO: toSentenceCase('Abierto'),
+    CERRADO: toSentenceCase('Cerrado'),
+    PAUSADO: toSentenceCase('Pausado'),
+    CANCELADO: toSentenceCase('Cancelado')
   }
-  return labels[estado as keyof typeof labels] || estado
+  return labels[estado as keyof typeof labels] || toSentenceCase(estado)
 }
 
 export function getEstadoCasoLabel(estado: string): string {
   const labels = {
-    NO_FEE: 'No Fee',
-    REFACTURADO: 'Refacturado',
-    PARA_REFACTURAR: 'Para Refacturar',
-    ON_GOING: 'On Going',
-    COBRADO: 'Cobrado'
+    NO_FEE: toSentenceCase('No Fee'),
+    REFACTURADO: toSentenceCase('Refacturado'),
+    PARA_REFACTURAR: toSentenceCase('Para Refacturar'),
+    ON_GOING: toSentenceCase('On Going'),
+    COBRADO: toSentenceCase('Cobrado')
   }
-  return labels[estado as keyof typeof labels] || estado
+  return labels[estado as keyof typeof labels] || toSentenceCase(estado)
 }
 
 export function getEstadoInternoColor(estado: string): string {

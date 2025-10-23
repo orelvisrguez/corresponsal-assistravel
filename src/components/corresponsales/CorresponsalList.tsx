@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { CorresponsalConCasos } from '@/types'
-import { filterCorresponsales } from '@/lib/utils'
+import { filterCorresponsales, formatCorresponsalNombre, formatPais } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import SimpleSearch from '@/components/ui/SimpleSearch'
@@ -208,7 +208,7 @@ export default function CorresponsalList({ corresponsales, onRefresh }: Correspo
                   onClick={() => openViewMode(corresponsal)}
                   title="Ver detalles y casos del corresponsal"
                 >
-                  {corresponsal.nombreCorresponsal}
+                  {formatCorresponsalNombre(corresponsal.nombreCorresponsal)}
                 </h3>
                 <div className="flex space-x-2">
                   <button
@@ -277,7 +277,7 @@ export default function CorresponsalList({ corresponsales, onRefresh }: Correspo
                 
                 <div className="pt-2 mt-4 border-t">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">{corresponsal.pais}</span>
+                    <span className="font-medium">{formatPais(corresponsal.pais)}</span>
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                       {corresponsal.casos.length} caso{corresponsal.casos.length !== 1 ? 's' : ''}
                     </span>

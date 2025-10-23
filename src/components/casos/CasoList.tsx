@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { CasoConCorresponsal, CorresponsalConCasos } from '@/types'
-import { formatDate, formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, getEstadoInternoColor, getEstadoCasoColor, getRowColorByEstado, getCardColorByEstado, filterCasos } from '@/lib/utils'
+import { formatDate, formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, getEstadoInternoColor, getEstadoCasoColor, getRowColorByEstado, getCardColorByEstado, filterCasos, formatCorresponsalNombre, formatPais } from '@/lib/utils'
 import { calcularSumaTotal, formatearMoneda } from '@/lib/calculations'
 import { format } from 'date-fns'
 import { formatDateForInput } from '@/lib/dateUtils'
@@ -271,7 +271,7 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                       )}
                       <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <BuildingOfficeIcon className="w-4 h-4" />
-                        <span className="font-medium">{caso.corresponsal.nombreCorresponsal}</span>
+                        <span className="font-medium">{formatCorresponsalNombre(caso.corresponsal.nombreCorresponsal)}</span>
                       </div>
                     </div>
                     <div className="flex flex-col space-y-1">
@@ -324,19 +324,19 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                       <div>
                         <div className="text-gray-500">Fee</div>
                         <div className="font-semibold text-gray-900">
-                          {caso.fee ? formatearMoneda(Number(caso.fee)) : '-'}
+                          {caso.fee ? formatearMoneda(caso.fee) : '-'}
                         </div>
                       </div>
                       <div>
                         <div className="text-gray-500">USD</div>
                         <div className="font-semibold text-gray-900">
-                          {caso.costoUsd ? formatearMoneda(Number(caso.costoUsd)) : '-'}
+                          {caso.costoUsd ? formatearMoneda(caso.costoUsd) : '-'}
                         </div>
                       </div>
                       <div>
                         <div className="text-gray-500">Agregado</div>
                         <div className="font-semibold text-gray-900">
-                          {caso.montoAgregado ? formatearMoneda(Number(caso.montoAgregado)) : '-'}
+                          {caso.montoAgregado ? formatearMoneda(caso.montoAgregado) : '-'}
                         </div>
                       </div>
                     </div>
@@ -455,10 +455,10 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                       <div className="col-span-2">
                         <div className="space-y-1">
                           <div className="text-sm text-gray-900 line-clamp-2">
-                            {caso.corresponsal.nombreCorresponsal}
+                            {formatCorresponsalNombre(caso.corresponsal.nombreCorresponsal)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            {caso.corresponsal.pais}
+                            {formatPais(caso.corresponsal.pais)}
                           </div>
                         </div>
                       </div>
@@ -513,20 +513,20 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                           <div className="flex justify-between">
                             <span className="text-gray-600">Fee:</span>
                             <span className="font-semibold text-gray-900">
-                              {caso.fee ? formatearMoneda(Number(caso.fee)) : '-'}
+                              {caso.fee ? formatearMoneda(caso.fee) : '-'}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">USD:</span>
                             <span className="font-semibold text-gray-900">
-                              {caso.costoUsd ? formatearMoneda(Number(caso.costoUsd)) : '-'}
+                              {caso.costoUsd ? formatearMoneda(caso.costoUsd) : '-'}
                             </span>
                           </div>
                           {caso.montoAgregado && Number(caso.montoAgregado) > 0 && (
                             <div className="flex justify-between">
                               <span className="text-gray-600">Agr:</span>
                               <span className="font-semibold text-gray-900">
-                                {formatearMoneda(Number(caso.montoAgregado))}
+                                {formatearMoneda(caso.montoAgregado)}
                               </span>
                             </div>
                           )}
@@ -691,11 +691,11 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
                     <div className="flex items-center space-x-2">
                       <BuildingOfficeIcon className="w-5 h-5 text-blue-200" />
-                      <span className="text-sm">{selectedCaso.corresponsal.nombreCorresponsal}</span>
+                      <span className="text-sm">{formatCorresponsalNombre(selectedCaso.corresponsal.nombreCorresponsal)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <MapPinIcon className="w-5 h-5 text-blue-200" />
-                      <span className="text-sm">{selectedCaso.pais}</span>
+                      <span className="text-sm">{formatPais(selectedCaso.pais)}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <CalendarIcon className="w-5 h-5 text-blue-200" />
@@ -792,11 +792,11 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-sm font-medium text-gray-600">Corresponsal</span>
-                      <span className="text-sm text-gray-900 text-right max-w-xs">{selectedCaso.corresponsal.nombreCorresponsal}</span>
+                      <span className="text-sm text-gray-900 text-right max-w-xs">{formatCorresponsalNombre(selectedCaso.corresponsal.nombreCorresponsal)}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-sm font-medium text-gray-600">País</span>
-                      <span className="text-sm text-gray-900">{selectedCaso.pais}</span>
+                      <span className="text-sm text-gray-900">{formatPais(selectedCaso.pais)}</span>
                     </div>
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-sm font-medium text-gray-600">Fecha Inicio</span>

@@ -21,17 +21,91 @@ import {
   BanknotesIcon,
   QuestionMarkCircleIcon,
   ShieldCheckIcon,
-  CogIcon
+  CogIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline'
-import { formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel } from '@/lib/utils'
+import { formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, formatCorresponsalNombre, formatPais } from '@/lib/utils'
 import Link from 'next/link'
 import KPIsAvanzados from '@/components/dashboard/KPIsAvanzados'
+import MapaCalorAtrasos from '@/components/dashboard/MapaCalorAtrasos'
+import FiltrosTemporales, { FiltroPeriodo } from '@/components/dashboard/FiltrosTemporales'
+import {
+  filtrarCasosPorPeriodo,
+  calcularKPIsFinancieros,
+  obtenerTopCorresponsales,
+  calcularTendencias,
+  formatearNumero,
+  calcularPorcentajeCambio,
+  calcularFiltroFechas,
+  FiltroFechas
+} from '@/lib/dashboardUtils'
+
+// Función auxiliar para convertir strings formateados a números (misma que en dashboardUtils)
+function parseFormattedNumber(value: any): number {
+  // Si es null, undefined o string vacío, retornar 0
+  if (value === null || value === undefined || value === '') {
+    return 0
+  }
+  
+  if (typeof value === 'number') {
+    return isFinite(value) ? value : 0
+  }
+  
+  if (typeof value === 'string') {
+    // Limpiar el string: eliminar espacios y caracteres no numéricos (excepto punto y coma)
+    let cleaned = value.trim().replace(/[^\d.,\-]/g, '')
+    
+    // Si el string está vacío después de limpiar, retornar 0
+    if (!cleaned) {
+      return 0
+    }
+    
+    // Detectar y manejar diferentes formatos de número
+    const lastComma = cleaned.lastIndexOf(',')
+    const lastPeriod = cleaned.lastIndexOf('.')
+    
+    // Si tiene tanto punto como coma, determinar cuál es el separador decimal
+    if (lastComma > -1 && lastPeriod > -1) {
+      if (lastComma > lastPeriod) {
+        // Español: 1.234.567,89 (coma decimal, punto miles)
+        cleaned = cleaned.replace(/\./g, '').replace(',', '.')
+      } else {
+        // Inglés: 1,234,567.89 (punto decimal, coma miles)
+        cleaned = cleaned.replace(/,/g, '')
+      }
+    } else if (cleaned.includes(',')) {
+      // Solo coma - asumir que es separador decimal
+      cleaned = cleaned.replace(',', '.')
+    }
+    // Si solo tiene punto, asumir que es separador decimal (sin cambios)
+    
+    const num = parseFloat(cleaned)
+    
+    // Validar que el número es válido y razonable
+    if (!isFinite(num) || isNaN(num)) {
+      return 0
+    }
+    
+    // Si el número es demasiado grande (probablemente mal formateado), retornarlo tal como está
+    // pero con un límite razonable
+    if (Math.abs(num) > 1e15) { // Más de 1 cuatrillón probablemente es un error
+      console.warn(`Número potencialmente mal formateado detectado: ${value} -> ${num}`)
+      return 0 // Retornar 0 para evitar cálculos erróneos
+    }
+    
+    return num
+  }
+  
+  return 0
+}
 
 interface CurrencyTotal {
   code: string
   total: number
   count: number
 }
+
+import { KPIFinanciero, TopCorresponsal, TendenciaData } from '@/lib/dashboardUtils'
 
 interface Stats {
   totalCorresponsales: number
@@ -53,31 +127,62 @@ interface Stats {
   }
 }
 
+interface DashboardData {
+  stats: Stats
+  casosFiltrados: CasoConCorresponsal[]
+  kpisFinancieros: KPIFinanciero
+  topCorresponsales: TopCorresponsal[]
+  tendencias: TendenciaData[]
+  filtroActual: FiltroFechas
+}
+
 export default function Dashboard() {
   const { data: session } = useSession()
   const [userRole, setUserRole] = useState<string | null>(null)
-  const [stats, setStats] = useState<Stats>({ 
-    totalCorresponsales: 0, 
-    totalCasos: 0, 
-    casosAbiertos: 0,
-    casosCerrados: 0,
-    casosPausados: 0,
-    casosCancelados: 0,
-    totalMontoUSD: 0,
-    totalMontoLocal: 0,
-    monedasLocales: [],
-    casosConFactura: 0,
-    estadosCaso: {
-      noFee: 0,
-      refacturado: 0,
-      paraRefacturar: 0,
-      onGoing: 0,
-      cobrado: 0
+  const [periodoSeleccionado, setPeriodoSeleccionado] = useState<FiltroPeriodo>('actual')
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    stats: { 
+      totalCorresponsales: 0, 
+      totalCasos: 0, 
+      casosAbiertos: 0,
+      casosCerrados: 0,
+      casosPausados: 0,
+      casosCancelados: 0,
+      totalMontoUSD: 0,
+      totalMontoLocal: 0,
+      monedasLocales: [],
+      casosConFactura: 0,
+      estadosCaso: {
+        noFee: 0,
+        refacturado: 0,
+        paraRefacturar: 0,
+        onGoing: 0,
+        cobrado: 0
+      }
+    },
+    casosFiltrados: [],
+    kpisFinancieros: {
+      ingresoTotalUSD: 0,
+      ingresoTotalLocal: {},
+      promedioPorCaso: 0,
+      casosFacturados: 0,
+      tasaFacturacion: 0,
+      casosCobrados: 0,
+      tasaCobro: 0,
+      ingresosPendientes: 0,
+      casosPendientesPago: 0
+    },
+    topCorresponsales: [],
+    tendencias: [],
+    filtroActual: {
+      fechaInicio: new Date(),
+      fechaFin: new Date(),
+      label: 'Mes Actual'
     }
   })
-  const [recentCasos, setRecentCasos] = useState<CasoConCorresponsal[]>([])
   const [allCasos, setAllCasos] = useState<CasoConCorresponsal[]>([])
   const [loading, setLoading] = useState(true)
+  const [ultimaActualizacion, setUltimaActualizacion] = useState<Date>(new Date())
 
   useEffect(() => {
     fetchDashboardData()
@@ -101,6 +206,96 @@ export default function Dashboard() {
     }
   }, [session])
 
+  // Función para actualizar datos cuando cambie el filtro
+  const actualizarDatosPorFiltro = (periodo: FiltroPeriodo) => {
+    setLoading(true)
+    
+    // Filtrar casos según el período seleccionado
+    const casosFiltrados = filtrarCasosPorPeriodo(allCasos, periodo)
+    
+    // Calcular estadísticas para el período filtrado
+    const casosAbiertos = casosFiltrados.filter(caso => caso.estadoInterno === 'ABIERTO').length
+    const casosCerrados = casosFiltrados.filter(caso => caso.estadoInterno === 'CERRADO').length
+    const casosPausados = casosFiltrados.filter(caso => caso.estadoInterno === 'PAUSADO').length
+    const casosCancelados = casosFiltrados.filter(caso => caso.estadoInterno === 'CANCELADO').length
+    
+    const totalMontoUSD = casosFiltrados.reduce((sum, caso) => {
+      return sum + parseFormattedNumber(caso.costoUsd)
+    }, 0)
+    
+    // Calcular totales por moneda local para el período
+    const currencyMap = new Map<string, { total: number; count: number }>()
+    let totalMontoLocal = 0
+    
+    casosFiltrados.forEach(caso => {
+      if (caso.costoMonedaLocal && caso.simboloMoneda) {
+        const amount = parseFormattedNumber(caso.costoMonedaLocal)
+        const currency = caso.simboloMoneda.trim()
+        
+        if (amount > 0 && currency) {
+          totalMontoLocal += amount
+          
+          if (!currencyMap.has(currency)) {
+            currencyMap.set(currency, { total: 0, count: 0 })
+          }
+          
+          const existing = currencyMap.get(currency)!
+          existing.total += amount
+          existing.count += 1
+        }
+      }
+    })
+    
+    const monedasLocales: CurrencyTotal[] = Array.from(currencyMap.entries())
+      .map(([code, data]) => ({
+        code,
+        total: data.total,
+        count: data.count
+      }))
+      .sort((a, b) => b.total - a.total)
+    
+    const casosConFactura = casosFiltrados.filter(caso => caso.tieneFactura).length
+    
+    const estadosCaso = {
+      noFee: casosFiltrados.filter(caso => caso.estadoDelCaso === 'NO_FEE').length,
+      refacturado: casosFiltrados.filter(caso => caso.estadoDelCaso === 'REFACTURADO').length,
+      paraRefacturar: casosFiltrados.filter(caso => caso.estadoDelCaso === 'PARA_REFACTURAR').length,
+      onGoing: casosFiltrados.filter(caso => caso.estadoDelCaso === 'ON_GOING').length,
+      cobrado: casosFiltrados.filter(caso => caso.estadoDelCaso === 'COBRADO').length
+    }
+    
+    // Calcular KPIs avanzados
+    const kpisFinancieros = calcularKPIsFinancieros(casosFiltrados)
+    const topCorresponsales = obtenerTopCorresponsales(casosFiltrados)
+    const tendencias = calcularTendencias(casosFiltrados, periodo)
+    const filtroActual = calcularFiltroFechas(periodo)
+    
+    // Actualizar estado
+    setDashboardData({
+      stats: {
+        totalCorresponsales: new Set(casosFiltrados.map(c => c.corresponsal.id)).size,
+        totalCasos: casosFiltrados.length,
+        casosAbiertos,
+        casosCerrados,
+        casosPausados,
+        casosCancelados,
+        totalMontoUSD,
+        totalMontoLocal,
+        monedasLocales,
+        casosConFactura,
+        estadosCaso
+      },
+      casosFiltrados,
+      kpisFinancieros,
+      topCorresponsales,
+      tendencias,
+      filtroActual
+    })
+    
+    setUltimaActualizacion(new Date())
+    setLoading(false)
+  }
+
   const fetchDashboardData = async () => {
     try {
       const [corresponsalesRes, casosRes] = await Promise.all([
@@ -111,82 +306,24 @@ export default function Dashboard() {
       const corresponsales: CorresponsalConCasos[] = await corresponsalesRes.json()
       const casos: CasoConCorresponsal[] = await casosRes.json()
 
-      // Calcular estadísticas detalladas
-      const casosAbiertos = casos.filter(caso => caso.estadoInterno === 'ABIERTO').length
-      const casosCerrados = casos.filter(caso => caso.estadoInterno === 'CERRADO').length
-      const casosPausados = casos.filter(caso => caso.estadoInterno === 'PAUSADO').length
-      const casosCancelados = casos.filter(caso => caso.estadoInterno === 'CANCELADO').length
-      
-      const totalMontoUSD = casos.reduce((sum, caso) => {
-        return sum + (caso.costoUsd ? Number(caso.costoUsd) : 0)
-      }, 0)
-      
-      // Calcular totales por moneda local separadamente
-      const currencyMap = new Map<string, { total: number; count: number }>()
-      let totalMontoLocal = 0
-      
-      casos.forEach(caso => {
-        if (caso.costoMonedaLocal && caso.simboloMoneda) {
-          const amount = Number(caso.costoMonedaLocal)
-          const currency = caso.simboloMoneda.trim()
-          
-          if (amount > 0 && currency) {
-            totalMontoLocal += amount
-            
-            if (!currencyMap.has(currency)) {
-              currencyMap.set(currency, { total: 0, count: 0 })
-            }
-            
-            const existing = currencyMap.get(currency)!
-            existing.total += amount
-            existing.count += 1
-          }
-        }
-      })
-      
-      // Convertir Map a array y ordenar por total descendente
-      const monedasLocales: CurrencyTotal[] = Array.from(currencyMap.entries())
-        .map(([code, data]) => ({
-          code,
-          total: data.total,
-          count: data.count
-        }))
-        .sort((a, b) => b.total - a.total)
-      
-      const casosConFactura = casos.filter(caso => caso.tieneFactura).length
-      
-      // Contar estados de casos
-      const estadosCaso = {
-        noFee: casos.filter(caso => caso.estadoDelCaso === 'NO_FEE').length,
-        refacturado: casos.filter(caso => caso.estadoDelCaso === 'REFACTURADO').length,
-        paraRefacturar: casos.filter(caso => caso.estadoDelCaso === 'PARA_REFACTURAR').length,
-        onGoing: casos.filter(caso => caso.estadoDelCaso === 'ON_GOING').length,
-        cobrado: casos.filter(caso => caso.estadoDelCaso === 'COBRADO').length
-      }
-
-      setStats({
-        totalCorresponsales: corresponsales.length,
-        totalCasos: casos.length,
-        casosAbiertos,
-        casosCerrados,
-        casosPausados,
-        casosCancelados,
-        totalMontoUSD,
-        totalMontoLocal,
-        monedasLocales,
-        casosConFactura,
-        estadosCaso
-      })
-
-      // Almacenar todos los casos y obtener los 5 más recientes
+      // Almacenar todos los casos
       setAllCasos(casos)
-      setRecentCasos(casos.slice(0, 5))
+      
+      // Inicializar con el filtro actual
+      actualizarDatosPorFiltro(periodoSeleccionado)
+      
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
-    } finally {
       setLoading(false)
     }
   }
+
+  // Actualizar datos cuando cambie el período
+  useEffect(() => {
+    if (allCasos.length > 0) {
+      actualizarDatosPorFiltro(periodoSeleccionado)
+    }
+  }, [periodoSeleccionado, allCasos])
 
   if (loading) {
     return (
@@ -198,48 +335,49 @@ export default function Dashboard() {
     )
   }
 
+  // Cards principales con KPIs más relevantes
   const statCards = [
     {
-      name: 'Total Corresponsales',
-      value: stats.totalCorresponsales,
-      icon: UserGroupIcon,
-      color: 'bg-blue-500',
-      description: 'Corresponsales registrados'
-    },
-    {
-      name: 'Total Casos',
-      value: stats.totalCasos,
-      icon: DocumentTextIcon,
+      name: 'Ingresos Totales',
+      value: formatCurrency(dashboardData.kpisFinancieros.ingresoTotalUSD),
+      icon: CurrencyDollarIcon,
       color: 'bg-green-500',
-      description: 'Casos en el sistema'
+      description: `${dashboardData.filtroActual.label} - ${dashboardData.stats.totalCasos} casos`
     },
     {
-      name: 'Casos Abiertos',
-      value: stats.casosAbiertos,
-      icon: ClockIcon,
-      color: 'bg-yellow-500',
-      description: 'Casos en progreso'
+      name: 'Casos Registrados',
+      value: dashboardData.stats.totalCasos,
+      icon: DocumentTextIcon,
+      color: 'bg-blue-500',
+      description: `${dashboardData.kpisFinancieros.tasaFacturacion.toFixed(1)}% con factura`
     },
     {
-      name: 'Casos Cerrados',
-      value: stats.casosCerrados,
+      name: 'Tasa de Conversión',
+      value: `${dashboardData.kpisFinancieros.tasaCobro.toFixed(1)}%`,
       icon: CheckCircleIcon,
       color: 'bg-emerald-500',
-      description: 'Casos finalizados'
+      description: `${dashboardData.kpisFinancieros.casosCobrados} casos cobrados`
     },
     {
-      name: 'Total USD',
-      value: formatCurrency(stats.totalMontoUSD),
-      icon: CurrencyDollarIcon,
+      name: 'Casos Activos',
+      value: dashboardData.stats.casosAbiertos,
+      icon: ClockIcon,
+      color: 'bg-yellow-500',
+      description: 'En progreso'
+    },
+    {
+      name: 'Ingresos Pendientes',
+      value: formatCurrency(dashboardData.kpisFinancieros.ingresosPendientes),
+      icon: ExclamationTriangleIcon,
+      color: 'bg-red-500',
+      description: `${dashboardData.kpisFinancieros.casosPendientesPago} casos por cobrar`
+    },
+    {
+      name: 'Promedio por Caso',
+      value: formatCurrency(dashboardData.kpisFinancieros.promedioPorCaso),
+      icon: ChartBarIcon,
       color: 'bg-purple-500',
-      description: 'Monto total en USD'
-    },
-    {
-      name: 'Con Factura',
-      value: stats.casosConFactura,
-      icon: DocumentCheckIcon,
-      color: 'bg-indigo-500',
-      description: 'Casos facturados'
+      description: 'Valor promedio'
     }
   ]
 
@@ -253,9 +391,16 @@ export default function Dashboard() {
       <Layout>
         <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-2 text-gray-600">Resumen general de casos y corresponsales</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Inteligente</h1>
+          <p className="mt-2 text-gray-600">Análisis integral de casos y corresponsales en tiempo real</p>
         </div>
+
+        {/* Filtros Temporales - Actualización Automática */}
+        <FiltrosTemporales
+          periodoSeleccionado={periodoSeleccionado}
+          onCambiarPeriodo={setPeriodoSeleccionado}
+          ultimaActualizacion={ultimaActualizacion}
+        />
 
         {/* Banner de configuración inicial para usuarios no admin */}
         {session && userRole && userRole !== 'ADMIN' && (
@@ -340,7 +485,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-green-800">Abiertos</span>
               </div>
-              <span className="text-2xl font-bold text-green-900">{stats.casosAbiertos}</span>
+              <span className="text-2xl font-bold text-green-900">{dashboardData.stats.casosAbiertos}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
@@ -350,7 +495,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-gray-800">Cerrados</span>
               </div>
-              <span className="text-2xl font-bold text-gray-900">{stats.casosCerrados}</span>
+              <span className="text-2xl font-bold text-gray-900">{dashboardData.stats.casosCerrados}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-orange-50 border border-orange-200">
@@ -360,7 +505,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-orange-800">Pausados</span>
               </div>
-              <span className="text-2xl font-bold text-orange-900">{stats.casosPausados}</span>
+              <span className="text-2xl font-bold text-orange-900">{dashboardData.stats.casosPausados}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-red-50 border border-red-200">
@@ -370,7 +515,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-red-800">Cancelados</span>
               </div>
-              <span className="text-2xl font-bold text-red-900">{stats.casosCancelados}</span>
+              <span className="text-2xl font-bold text-red-900">{dashboardData.stats.casosCancelados}</span>
             </div>
           </div>
         </div>
@@ -390,7 +535,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-gray-800">No Fee</span>
               </div>
-              <span className="text-2xl font-bold text-gray-900">{stats.estadosCaso.noFee}</span>
+              <span className="text-2xl font-bold text-gray-900">{dashboardData.stats.estadosCaso.noFee}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-blue-50 border border-blue-200">
@@ -400,7 +545,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-blue-800">Refacturado</span>
               </div>
-              <span className="text-2xl font-bold text-blue-900">{stats.estadosCaso.refacturado}</span>
+              <span className="text-2xl font-bold text-blue-900">{dashboardData.stats.estadosCaso.refacturado}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-orange-50 border border-orange-200">
@@ -410,7 +555,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-orange-800">Para Refacturar</span>
               </div>
-              <span className="text-2xl font-bold text-orange-900">{stats.estadosCaso.paraRefacturar}</span>
+              <span className="text-2xl font-bold text-orange-900">{dashboardData.stats.estadosCaso.paraRefacturar}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-purple-50 border border-purple-200">
@@ -420,7 +565,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-purple-800">On Going</span>
               </div>
-              <span className="text-2xl font-bold text-purple-900">{stats.estadosCaso.onGoing}</span>
+              <span className="text-2xl font-bold text-purple-900">{dashboardData.stats.estadosCaso.onGoing}</span>
             </div>
             
             <div className="flex items-center justify-between p-4 rounded-lg bg-green-50 border border-green-200">
@@ -430,7 +575,7 @@ export default function Dashboard() {
                 </div>
                 <span className="ml-3 text-sm font-semibold text-green-800">Cobrado</span>
               </div>
-              <span className="text-2xl font-bold text-green-900">{stats.estadosCaso.cobrado}</span>
+              <span className="text-2xl font-bold text-green-900">{dashboardData.stats.estadosCaso.cobrado}</span>
             </div>
           </div>
         </div>
@@ -444,16 +589,16 @@ export default function Dashboard() {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <span className="text-sm font-medium text-green-700">Total USD</span>
-              <span className="text-lg font-bold text-green-900">{formatCurrency(stats.totalMontoUSD)}</span>
+              <span className="text-lg font-bold text-green-900">{formatCurrency(dashboardData.kpisFinancieros.ingresoTotalUSD)}</span>
             </div>
             
             {/* Monedas Locales Separadas */}
-            {stats.monedasLocales.length > 0 ? (
+            {Object.keys(dashboardData.kpisFinancieros.ingresoTotalLocal).length > 0 ? (
               <>
                 <div className="border-t pt-3">
                   <h4 className="text-sm font-medium text-gray-700 mb-3">Monedas Locales</h4>
                   <div className="space-y-2">
-                    {stats.monedasLocales.map((moneda, index) => {
+                    {Object.entries(dashboardData.kpisFinancieros.ingresoTotalLocal).map(([moneda, total], index) => {
                       const bgColors = ['bg-blue-50', 'bg-purple-50', 'bg-indigo-50', 'bg-teal-50', 'bg-orange-50']
                       const textColors = ['text-blue-700', 'text-purple-700', 'text-indigo-700', 'text-teal-700', 'text-orange-700']
                       const boldColors = ['text-blue-900', 'text-purple-900', 'text-indigo-900', 'text-teal-900', 'text-orange-900']
@@ -463,13 +608,15 @@ export default function Dashboard() {
                       const boldColor = boldColors[index % boldColors.length]
                       
                       return (
-                        <div key={moneda.code} className={`flex justify-between items-center p-3 ${bgColor} rounded-lg`}>
+                        <div key={moneda} className={`flex justify-between items-center p-3 ${bgColor} rounded-lg`}>
                           <div className="flex flex-col">
-                            <span className={`text-sm font-medium ${textColor}`}>Total {moneda.code}</span>
-                            <span className={`text-xs ${textColor} opacity-75`}>{moneda.count} casos</span>
+                            <span className={`text-sm font-medium ${textColor}`}>Total {moneda}</span>
+                            <span className={`text-xs ${textColor} opacity-75`}>
+                              {dashboardData.stats.monedasLocales.find(m => m.code === moneda)?.count || 0} casos
+                            </span>
                           </div>
                           <span className={`text-lg font-bold ${boldColor}`}>
-                            {moneda.total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {moneda.code}
+                            {total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {moneda}
                           </span>
                         </div>
                       )
@@ -487,11 +634,90 @@ export default function Dashboard() {
             <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border-t pt-3">
               <span className="text-sm font-medium text-purple-700">% Facturados</span>
               <span className="text-lg font-bold text-purple-900">
-                {stats.totalCasos > 0 ? Math.round((stats.casosConFactura / stats.totalCasos) * 100) : 0}%
+                {dashboardData.kpisFinancieros.tasaFacturacion.toFixed(1)}%
               </span>
             </div>
           </div>
         </div>
+
+        {/* Top Corresponsales del Período */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900">Top Corresponsales</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Corresponsales más activos en {dashboardData.filtroActual.label}
+              </p>
+            </div>
+            <UserGroupIcon className="h-6 w-6 text-gray-400" />
+          </div>
+
+          {dashboardData.topCorresponsales.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashboardData.topCorresponsales.map((corresponsal, index) => {
+                const positionColors = [
+                  'bg-gradient-to-r from-yellow-400 to-yellow-500',
+                  'bg-gradient-to-r from-gray-400 to-gray-500', 
+                  'bg-gradient-to-r from-orange-400 to-orange-500'
+                ]
+                const borderColors = ['border-yellow-300', 'border-gray-300', 'border-orange-300']
+                const textColors = ['text-yellow-800', 'text-gray-800', 'text-orange-800']
+                
+                const isTopThree = index < 3
+                const bgColor = isTopThree ? positionColors[index] : 'bg-gray-100'
+                const borderColor = isTopThree ? borderColors[index] : 'border-gray-200'
+                const textColor = isTopThree ? textColors[index] : 'text-gray-800'
+                
+                return (
+                  <div
+                    key={corresponsal.id}
+                    className={`p-4 rounded-lg border-2 ${borderColor} ${bgColor} hover:shadow-md transition-shadow`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`text-sm font-bold ${isTopThree ? 'text-white' : 'text-gray-600'}`}>
+                        #{index + 1}
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-lg font-bold ${isTopThree ? 'text-white' : textColor}`}>
+                          {formatCurrency(corresponsal.ingresosUSD)}
+                        </div>
+                        <div className={`text-xs ${isTopThree ? 'text-white opacity-75' : 'text-gray-500'}`}>
+                          ingresos USD
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h4 className={`font-semibold text-sm mb-1 ${isTopThree ? 'text-white' : textColor}`}>
+                      {corresponsal.nombre}
+                    </h4>
+                    
+                    <div className={`flex items-center space-x-2 mb-2 ${isTopThree ? 'text-white opacity-75' : 'text-gray-600'}`}>
+                      <GlobeAltIcon className="w-3 h-3" />
+                      <span className="text-xs">{formatPais(corresponsal.pais)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className={`text-xs ${isTopThree ? 'text-white opacity-75' : 'text-gray-500'}`}>
+                        {corresponsal.totalCasos} casos
+                      </div>
+                      <div className={`text-xs font-medium ${isTopThree ? 'text-white' : 'text-green-600'}`}>
+                        {corresponsal.eficiencia.toFixed(1)}% eficiencia
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <UserGroupIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-500">No hay corresponsales activos en este período</p>
+            </div>
+          )}
+        </div>
+
+        {/* Mapa de Calor - Casos con Atrasos */}
+        <MapaCalorAtrasos casos={dashboardData.casosFiltrados} maxItems={12} />
 
         {/* Bloque de Ayuda */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
@@ -517,10 +743,17 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Cases */}
+        {/* Casos Recientes del Período */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Casos Recientes</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium text-gray-900">
+                Casos Recientes - {dashboardData.filtroActual.label}
+              </h2>
+              <span className="text-sm text-gray-500">
+                Mostrando {Math.min(5, dashboardData.casosFiltrados.length)} de {dashboardData.casosFiltrados.length} casos
+              </span>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -550,16 +783,19 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recentCasos.map((caso) => (
+                {dashboardData.casosFiltrados
+                  .sort((a, b) => new Date(b.fechaInicioCaso!).getTime() - new Date(a.fechaInicioCaso!).getTime())
+                  .slice(0, 5)
+                  .map((caso) => (
                   <tr key={caso.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {caso.nroCasoAssistravel}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {caso.corresponsal.nombreCorresponsal}
+                      {formatCorresponsalNombre(caso.corresponsal.nombreCorresponsal)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {caso.pais}
+                      {formatPais(caso.pais)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -601,11 +837,14 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
-          {recentCasos.length === 0 && (
+          {dashboardData.casosFiltrados.length === 0 && (
             <div className="text-center py-12">
               <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay casos</h3>
-              <p className="mt-1 text-sm text-gray-500">Comienza creando tu primer caso.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay casos en este período</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                No se encontraron casos en {dashboardData.filtroActual.label.toLowerCase()}. 
+                Selecciona un período diferente o crea nuevos casos.
+              </p>
             </div>
           )}
         </div>

@@ -54,7 +54,7 @@ export default function InformeFinanciero({ initialData }: InformeFinancieroProp
     fetchData()
   }
 
-  const formatCurrency = (amount: number | undefined | null, currency: 'USD' | 'PESOS') => {
+  const formatCurrency = (amount: number | undefined | null, currency: 'USD' | 'PESOS' = 'USD') => {
     const safeAmount = amount || 0
     return currency === 'USD' 
       ? `$${safeAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` 

@@ -57,7 +57,7 @@ export default function ReporteCorresponsales({ initialData }: ReporteCorrespons
     fetchData()
   }
 
-  const formatCurrency = (amount: number, currency: 'USD' | 'PESOS') => {
+  const formatCurrency = (amount: number, currency: 'USD' | 'PESOS' = 'USD') => {
     return currency === 'USD' 
       ? `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` 
       : `$${amount.toLocaleString('es-AR')} ARS`

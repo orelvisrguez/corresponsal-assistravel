@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { CorresponsalConCasos } from '@/types'
-import { formatDate, formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, getEstadoInternoColor, getEstadoCasoColor } from '@/lib/utils'
+import { formatDate, formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, getEstadoInternoColor, getEstadoCasoColor, formatCorresponsalNombre, formatPais, formatNombreContacto, formatDireccion } from '@/lib/utils'
 import { calcularSumaTotal, formatearMoneda } from '@/lib/calculations'
 import Button from '@/components/ui/Button'
 import { 
@@ -80,13 +80,13 @@ export default function CorresponsalView({ corresponsal, onBack, onEditCase }: C
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">Nombre del Corresponsal</h3>
-              <p className="text-base font-semibold text-gray-900">{corresponsal.nombreCorresponsal}</p>
+              <p className="text-base font-semibold text-gray-900">{formatCorresponsalNombre(corresponsal.nombreCorresponsal)}</p>
             </div>
             
             {corresponsal.nombreContacto && (
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Contacto</h3>
-                <p className="text-base text-gray-900">{corresponsal.nombreContacto}</p>
+                <p className="text-base text-gray-900">{formatNombreContacto(corresponsal.nombreContacto)}</p>
               </div>
             )}
             
@@ -94,7 +94,7 @@ export default function CorresponsalView({ corresponsal, onBack, onEditCase }: C
               <h3 className="text-sm font-medium text-gray-500 mb-1">País</h3>
               <p className="text-base text-gray-900 flex items-center">
                 <MapPinIcon className="h-4 w-4 mr-1 text-gray-400" />
-                {corresponsal.pais}
+                {formatPais(corresponsal.pais)}
               </p>
             </div>
             
@@ -142,7 +142,7 @@ export default function CorresponsalView({ corresponsal, onBack, onEditCase }: C
             {corresponsal.direccion && (
               <div className="md:col-span-2 lg:col-span-3">
                 <h3 className="text-sm font-medium text-gray-500 mb-1">Dirección</h3>
-                <p className="text-base text-gray-900">{corresponsal.direccion}</p>
+                <p className="text-base text-gray-900">{formatDireccion(corresponsal.direccion)}</p>
               </div>
             )}
           </div>

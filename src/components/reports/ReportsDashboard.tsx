@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatCorresponsalNombre, formatPais } from '@/lib/utils'
 import { 
-  ChartBarIcon,
+  ChartBarIcon, 
+  CurrencyDollarIcon, 
   DocumentTextIcon,
   UserGroupIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  CurrencyDollarIcon,
   XCircleIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
@@ -91,7 +90,7 @@ export default function ReportsDashboard({ initialData }: ReportsDashboardProps)
     }
   }
 
-  const formatCurrency = (amount: number, currency: 'USD' | 'PESOS') => {
+  const formatCurrency = (amount: number, currency: 'USD' | 'PESOS' = 'USD') => {
     return currency === 'USD' 
       ? `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` 
       : `$${amount.toLocaleString('es-AR')} ARS`
@@ -352,8 +351,8 @@ export default function ReportsDashboard({ initialData }: ReportsDashboardProps)
                   <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3">
                       <div>
-                        <p className="font-medium text-gray-900">{corresponsal.nombreCorresponsal}</p>
-                        <p className="text-xs text-gray-500">{corresponsal.pais}</p>
+                        <p className="font-medium text-gray-900">{formatCorresponsalNombre(corresponsal.nombreCorresponsal)}</p>
+                        <p className="text-xs text-gray-500">{formatPais(corresponsal.pais)}</p>
                       </div>
                     </td>
                     <td className="text-right py-3 text-gray-900">{corresponsal.totalCasos}</td>
