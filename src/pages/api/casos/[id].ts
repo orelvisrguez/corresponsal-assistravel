@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { casoSchema } from '@/lib/validations'
+import { registrarCambio, registrarCambiosMultiples } from '@/lib/caso-historial'
+import { AccionHistorial } from '@prisma/client'
 
 // Helper function to create local dates (avoid UTC timezone issues)
 function createLocalDate(dateString: string): Date {
@@ -46,6 +48,15 @@ export default async function handler(
       case 'PUT':
         const data = casoSchema.parse(req.body)
         
+        // Obtener caso actual antes de actualizar
+        const casoAnterior = await prisma.caso.findUnique({
+          where: { id: casoId }
+        })
+        
+        if (!casoAnterior) {
+          return res.status(404).json({ message: 'Caso no encontrado' })
+        }
+        
         // Crear fecha local (evitar problemas de timezone UTC)
         const fechaInicioCasoDate = createLocalDate(data.fechaInicioCaso)
         
@@ -77,9 +88,57 @@ export default async function handler(
           }
         })
         
+        // Registrar cambios en el historial
+        const datosNuevos = {
+          corresponsalId: data.corresponsalId,
+          nroCasoAssistravel: data.nroCasoAssistravel,
+          nroCasoCorresponsal: data.nroCasoCorresponsal || null,
+          fechaInicioCaso: fechaInicioCasoDate,
+          pais: data.pais,
+          informeMedico: data.informeMedico,
+          fee: data.fee || null,
+          costoUsd: data.costoUsd || null,
+          costoMonedaLocal: data.costoMonedaLocal || null,
+          simboloMoneda: data.simboloMoneda || null,
+          montoAgregado: data.montoAgregado || null,
+          tieneFactura: data.tieneFactura,
+          nroFactura: data.nroFactura || null,
+          fechaEmisionFactura: data.fechaEmisionFactura ? createLocalDate(data.fechaEmisionFactura) : null,
+          fechaVencimientoFactura: data.fechaVencimientoFactura ? createLocalDate(data.fechaVencimientoFactura) : null,
+          fechaPagoFactura: data.fechaPagoFactura ? createLocalDate(data.fechaPagoFactura) : null,
+          estadoInterno: data.estadoInterno,
+          estadoDelCaso: data.estadoDelCaso,
+          observaciones: data.observaciones || null
+        }
+        
+        await registrarCambiosMultiples(
+          casoId,
+          session.user.email || 'sistema',
+          session.user.name || undefined,
+          casoAnterior,
+          datosNuevos
+        )
+        
         return res.status(200).json(casoActualizado)
 
       case 'DELETE':
+        // Obtener caso antes de eliminar para el historial
+        const casoAEliminar = await prisma.caso.findUnique({
+          where: { id: casoId }
+        })
+        
+        if (!casoAEliminar) {
+          return res.status(404).json({ message: 'Caso no encontrado' })
+        }
+        
+        // Registrar eliminación en el historial
+        await registrarCambio({
+          casoId,
+          usuarioEmail: session.user.email || 'sistema',
+          usuarioNombre: session.user.name || undefined,
+          accion: AccionHistorial.ELIMINACION
+        })
+        
         await prisma.caso.delete({
           where: { id: casoId }
         })

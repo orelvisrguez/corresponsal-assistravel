@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { casoSchema } from '@/lib/validations'
+import { registrarCambio } from '@/lib/caso-historial'
+import { AccionHistorial } from '@prisma/client'
 
 // Helper function to create local dates (avoid UTC timezone issues)
 function createLocalDate(dateString: string): Date {
@@ -61,6 +63,14 @@ export default async function handler(
           include: {
             corresponsal: true
           }
+        })
+        
+        // Registrar creación en el historial
+        await registrarCambio({
+          casoId: nuevoCaso.id,
+          usuarioEmail: session.user.email || 'sistema',
+          usuarioNombre: session.user.name || undefined,
+          accion: AccionHistorial.CREACION
         })
         
         return res.status(201).json(nuevoCaso)

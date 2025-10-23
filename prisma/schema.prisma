@@ -112,6 +112,9 @@ model Caso {
   // Relación con corresponsal
   corresponsal            Corresponsal @relation(fields: [corresponsalId], references: [id], onDelete: Cascade)
   
+  // Relación con historial de cambios
+  historial               CasoHistorial[]
+  
   @@map("casos")
 }
 
@@ -167,4 +170,31 @@ enum TipoInforme {
   CASOS
   CORRESPONSAL
   FACTURACION
+}
+
+model CasoHistorial {
+  id              Int       @id @default(autoincrement())
+  casoId          Int
+  usuarioEmail    String    // Email del usuario que hizo el cambio
+  usuarioNombre   String?   // Nombre del usuario para referencia
+  accion          AccionHistorial
+  campoModificado String?   // Nombre del campo modificado (null para creación/eliminación)
+  valorAnterior   String?   @db.Text // Valor anterior (serializado como string)
+  valorNuevo      String?   @db.Text // Valor nuevo (serializado como string)
+  fechaHora       DateTime  @default(now())
+  
+  // Relación con caso
+  caso            Caso      @relation(fields: [casoId], references: [id], onDelete: Cascade)
+  
+  @@index([casoId])
+  @@index([fechaHora])
+  @@index([usuarioEmail])
+  @@map("casos_historial")
+}
+
+enum AccionHistorial {
+  CREACION
+  EDICION
+  ELIMINACION
+  CAMBIO_ESTADO
 }

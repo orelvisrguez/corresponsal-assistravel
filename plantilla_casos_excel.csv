@@ -1,6 +1,0 @@
-id,corresponsal_id,nro_caso_assistravel,nro_caso_corresponsal,fecha_de_inicio,pais,informe_medico,fee,costo_usd,costo_moneda_local,simbolo_moneda,monto_agregado,tiene_factura,nro_factura,fecha_vencimiento_factura,fecha_pago_factura,estado_interno,estado_del_caso,observaciones
-1,EUROPA_MEDICAL,AST-2025-001,EUR-MED-001,2025-01-15,España,SI,250.00,250.00,230.50,EUR,0,SI,FAC-2025-001,2025-02-15,,ABIERTO,ON_GOING,Caso médico - emergencia
-2,USA_PARTNERS,AST-2025-002,USA-PAR-002,2025-01-20,Estados Unidos,NO,180.75,180.75,180.75,USD,25.00,NO,,,,,CERRADO,COBRADO,Caso estándar completado
-3,LATAM_ASSIST,AST-2025-003,LAT-ASS-003,2025-01-25,México,SI,120.00,120.00,2400.00,MXN,0,SI,FAC-2025-002,2025-03-01,,ABIERTO,PARA_REFACTURAR,Pendiente documentación
-4,ASIA_SUPPORT,AST-2025-004,ASIA-SUP-004,2025-02-01,Japón,NO,300.50,300.50,45000.00,JPY,50.00,NO,,,,,ABIERTO,NO_FEE,Caso en evaluación
-5,CANADA_CARE,AST-2025-005,CAN-CAR-005,2025-02-05,Canadá,SI,195.25,195.25,260.00,CAD,0,SI,FAC-2025-003,2025-03-05,2025-03-01,CERRADO,COBRADO,Caso completado exitosamente
