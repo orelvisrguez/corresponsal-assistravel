@@ -37,9 +37,43 @@ export function formatDateForInput(date: Date | string | null | undefined): stri
 
 /**
  * Crea una fecha local a partir de string YYYY-MM-DD
- * Equivalente a la función createLocalDate del backend
+ * VERSIÓN ROBUSTA: Evita problemas de timezone creando fecha "pura"
+ * Esta función es crítica para el funcionamiento correcto en Vercel
  */
 export function createLocalDate(dateString: string): Date {
   const [year, month, day] = dateString.split('-').map(Number)
-  return new Date(year, month - 1, day) // month - 1 porque los meses en JS van de 0 a 11
+  
+  // Crear fecha usando constructor Date con componentes directos
+  // JavaScript crea la fecha como local sin conversión de timezone
+  const date = new Date(year, month - 1, day)
+  
+  // Verificar que la fecha sea válida
+  if (isNaN(date.getTime())) {
+    throw new Error(`Fecha inválida: ${dateString}`)
+  }
+  
+  return date
+}
+
+/**
+ * Función alternativa más explícita para casos problemáticos
+ * Fuerza que la fecha se interprete sin timezone
+ */
+export function createSafeDate(dateString: string): Date {
+  // Validar formato de fecha
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    throw new Error(`Formato de fecha inválido: ${dateString}. Use YYYY-MM-DD`)
+  }
+  
+  const [year, month, day] = dateString.split('-').map(Number)
+  
+  // Crear fecha usando Date.UTC para evitar timezone issues
+  const utcDate = new Date(Date.UTC(year, month - 1, day))
+  
+  // Convertir de vuelta a fecha local (elimina el offset UTC)
+  return new Date(
+    utcDate.getUTCFullYear(),
+    utcDate.getUTCMonth(),
+    utcDate.getUTCDate()
+  )
 }

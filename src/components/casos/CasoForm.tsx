@@ -12,6 +12,7 @@ import AutoCompleteInput from '@/components/ui/AutoCompleteInput'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { calcularSumaTotalDirecto, formatearMoneda } from '@/lib/calculations'
+import { formatDateForInput } from '@/lib/dateUtils'
 import { useMemo, useEffect } from 'react'
 import { 
   DocumentTextIcon, 
@@ -45,14 +46,6 @@ export default function CasoForm({
   loading = false, 
   submitText = 'Guardar' 
 }: CasoFormProps) {
-  const formatDateForInput = (date: Date | string | null | undefined): string => {
-    if (!date) return ''
-    try {
-      return format(new Date(date), 'yyyy-MM-dd')
-    } catch {
-      return ''
-    }
-  }
 
   const {
     register,

@@ -5,12 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { casoSchema } from '@/lib/validations'
 import { registrarCambio, registrarCambiosMultiples } from '@/lib/caso-historial'
 import { AccionHistorial } from '@prisma/client'
+import { createSafeDate } from '@/lib/dateUtils'
 
-// Helper function to create local dates (avoid UTC timezone issues)
-function createLocalDate(dateString: string): Date {
-  const [year, month, day] = dateString.split('-').map(Number)
-  return new Date(year, month - 1, day) // month - 1 porque los meses en JS van de 0 a 11
-}
+import { createSafeDate } from '@/lib/dateUtils'
 
 export default async function handler(
   req: NextApiRequest,
@@ -58,7 +55,7 @@ export default async function handler(
         }
         
         // Crear fecha local (evitar problemas de timezone UTC)
-        const fechaInicioCasoDate = createLocalDate(data.fechaInicioCaso)
+        const fechaInicioCasoDate = createSafeDate(data.fechaInicioCaso)
         
         const casoActualizado = await prisma.caso.update({
           where: { id: casoId },
@@ -76,9 +73,9 @@ export default async function handler(
             montoAgregado: data.montoAgregado || null,
             tieneFactura: data.tieneFactura,
             nroFactura: data.nroFactura || null,
-            fechaEmisionFactura: data.fechaEmisionFactura ? createLocalDate(data.fechaEmisionFactura) : null,
-            fechaVencimientoFactura: data.fechaVencimientoFactura ? createLocalDate(data.fechaVencimientoFactura) : null,
-            fechaPagoFactura: data.fechaPagoFactura ? createLocalDate(data.fechaPagoFactura) : null,
+            fechaEmisionFactura: data.fechaEmisionFactura ? createSafeDate(data.fechaEmisionFactura) : null,
+            fechaVencimientoFactura: data.fechaVencimientoFactura ? createSafeDate(data.fechaVencimientoFactura) : null,
+            fechaPagoFactura: data.fechaPagoFactura ? createSafeDate(data.fechaPagoFactura) : null,
             estadoInterno: data.estadoInterno,
             estadoDelCaso: data.estadoDelCaso,
             observaciones: data.observaciones || null
@@ -103,9 +100,9 @@ export default async function handler(
           montoAgregado: data.montoAgregado || null,
           tieneFactura: data.tieneFactura,
           nroFactura: data.nroFactura || null,
-          fechaEmisionFactura: data.fechaEmisionFactura ? createLocalDate(data.fechaEmisionFactura) : null,
-          fechaVencimientoFactura: data.fechaVencimientoFactura ? createLocalDate(data.fechaVencimientoFactura) : null,
-          fechaPagoFactura: data.fechaPagoFactura ? createLocalDate(data.fechaPagoFactura) : null,
+          fechaEmisionFactura: data.fechaEmisionFactura ? createSafeDate(data.fechaEmisionFactura) : null,
+          fechaVencimientoFactura: data.fechaVencimientoFactura ? createSafeDate(data.fechaVencimientoFactura) : null,
+          fechaPagoFactura: data.fechaPagoFactura ? createSafeDate(data.fechaPagoFactura) : null,
           estadoInterno: data.estadoInterno,
           estadoDelCaso: data.estadoDelCaso,
           observaciones: data.observaciones || null

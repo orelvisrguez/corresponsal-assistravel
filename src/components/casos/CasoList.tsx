@@ -5,6 +5,7 @@ import { CasoConCorresponsal, CorresponsalConCasos } from '@/types'
 import { formatDate, formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, getEstadoInternoColor, getEstadoCasoColor, getRowColorByEstado, getCardColorByEstado, filterCasos } from '@/lib/utils'
 import { calcularSumaTotal, formatearMoneda } from '@/lib/calculations'
 import { format } from 'date-fns'
+import { formatDateForInput } from '@/lib/dateUtils'
 import Button from '@/components/ui/Button'
 import Modal from '@/components/ui/Modal'
 import SearchAndFilters, { FilterOptions } from '@/components/ui/SearchAndFilters'
@@ -29,15 +30,7 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
-// Helper function to format dates for input fields
-function formatDateForInput(date: Date | string | null | undefined): string {
-  if (!date) return ''
-  try {
-    return format(new Date(date), 'yyyy-MM-dd')
-  } catch (error) {
-    return ''
-  }
-}
+// Usar la función utilitaria centralizada para formateo de fechas
 
 interface CasoListProps {
   casos: CasoConCorresponsal[]

@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { 
-  ChartBarIcon,
+  ChartBarIcon, 
+  CurrencyDollarIcon, 
   DocumentTextIcon,
   UserGroupIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  CurrencyDollarIcon, 
   XCircleIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
@@ -291,7 +291,7 @@ export default function ReportsDashboard({ initialData }: ReportsDashboardProps)
                     ></div>
                   </div>
                 </div>
-              )) || []}
+              )) || []}}
             </div>
           </div>
 

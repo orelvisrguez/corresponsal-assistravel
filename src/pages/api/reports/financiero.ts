@@ -19,19 +19,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     const { fechaInicio, fechaFin } = req.query;
     
-    const startDate = fechaInicio ? new Date(fechaInicio as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const endDate = fechaFin ? new Date(fechaFin as string) : new Date();
-    
-    console.log('Consultando datos financieros reales para periodo:', { fechaInicio, fechaFin });
+    console.log('Parámetros recibidos:', { fechaInicio, fechaFin });
 
-    // Consultar casos del período
+    // Consultar casos del período - Si no hay filtros de fecha, traer TODOS los casos
+    const whereClause: any = {};
+    
+    if (fechaInicio || fechaFin) {
+      whereClause.fechaInicioCaso = {};
+      if (fechaInicio) whereClause.fechaInicioCaso.gte = new Date(fechaInicio as string);
+      if (fechaFin) whereClause.fechaInicioCaso.lte = new Date(fechaFin as string);
+      console.log('Filtrando por fechas:', whereClause.fechaInicioCaso);
+    } else {
+      console.log('Sin filtros de fecha - trayendo TODOS los casos');
+    }
+
     const casos = await prisma.caso.findMany({
-      where: {
-        fechaInicioCaso: {
-          gte: startDate,
-          lte: endDate
-        }
-      },
+      where: whereClause,
       include: {
         corresponsal: true
       }
@@ -121,6 +124,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Top corresponsales
+    console.log('\n=== AGREGANDO DATOS POR CORRESPONSAL ===');
     const corresponsalesStats = casos.reduce((acc, caso) => {
       // Saltar casos sin corresponsal
       if (!caso.corresponsal || !caso.corresponsalId) return acc;
@@ -140,10 +144,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           feeTotalPesos: 0
         };
       }
+      
+      const costoUsdNum = Number(caso.costoUsd || 0);
+      const costoLocalNum = Number(caso.costoMonedaLocal || 0);
+      const feeNum = Number(caso.fee || 0);
+      
+      // Log solo los primeros casos para ver los valores
+      if (acc[corrId].totalCasos < 2) {
+        console.log(`Caso ID ${caso.id} - ${caso.corresponsal.nombreCorresponsal}:`);
+        console.log(`  costoUsd: ${caso.costoUsd} -> ${costoUsdNum}`);
+        console.log(`  costoMonedaLocal: ${caso.costoMonedaLocal} -> ${costoLocalNum}`);
+        console.log(`  fee: ${caso.fee} -> ${feeNum}`);
+      }
+      
       acc[corrId].totalCasos++;
-      acc[corrId].montoTotalUSD += Number(caso.costoUsd || 0);
-      acc[corrId].montoTotalPesos += Number(caso.costoMonedaLocal || 0);
-      acc[corrId].feeTotalUSD += Number(caso.fee || 0);
+      acc[corrId].montoTotalUSD += costoUsdNum;
+      acc[corrId].montoTotalPesos += costoLocalNum;
+      acc[corrId].feeTotalUSD += feeNum;
       return acc;
     }, {} as Record<number, any>);
 
@@ -190,6 +207,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Datos financieros REALES generados exitosamente');
     console.log('Total casos analizados:', totalCasos);
     console.log('Monto total USD:', montoTotalUSD);
+    console.log('Top corresponsales encontrados:', topCorresponsales.length);
+    if (topCorresponsales.length > 0) {
+      console.log('Primer corresponsal:', {
+        nombre: topCorresponsales[0].corresponsal.nombre,
+        casos: topCorresponsales[0].totalCasos,
+        montoUSD: topCorresponsales[0].montoTotalUSD,
+        feeUSD: topCorresponsales[0].feeTotalUSD
+      });
+    }
 
     res.status(200).json({
       success: true,
