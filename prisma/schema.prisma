@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  role          UserRole  @default(USER)
+  status        UserStatus @default(ACTIVE)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // NextAuth.js fields
+  accounts      Account[]
+  sessions      Session[]
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+model Corresponsal {
+  id               Int     @id @default(autoincrement())
+  nombreCorresponsal String
+  nombreContacto   String?
+  nroTelefono      String?
+  email            String?
+  web              String?
+  direccion        String?
+  pais             String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relación con casos
+  casos            Caso[]
+  
+  @@map("corresponsales")
+}
+
+model Caso {
+  id                      Int       @id @default(autoincrement())
+  corresponsalId          Int
+  nroCasoAssistravel      String
+  nroCasoCorresponsal     String?
+  fechaInicioCaso         DateTime
+  pais                    String
+  informeMedico           Boolean   @default(false)
+  fee                     Decimal?  @db.Decimal(10,2)  // Fee del caso
+  costoUsd                Decimal?  @db.Decimal(10,2)
+  costoMonedaLocal        Decimal?  @db.Decimal(10,2)  // Valor de referencia, no se calcula
+  simboloMoneda           String?   // Lista de monedas como string
+  montoAgregado           Decimal?  @db.Decimal(10,2)
+  tieneFactura            Boolean   @default(false)
+  nroFactura              String?
+  fechaEmisionFactura     DateTime?
+  fechaVencimientoFactura DateTime?
+  fechaPagoFactura        DateTime?
+  estadoInterno           EstadoInterno @default(ABIERTO)
+  estadoDelCaso           EstadoCaso    @default(NO_FEE)
+  observaciones           String?   @db.Text
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  
+  // Relación con corresponsal
+  corresponsal            Corresponsal @relation(fields: [corresponsalId], references: [id], onDelete: Cascade)
+  
+  @@map("casos")
+}
+
+enum EstadoInterno {
+  ABIERTO
+  CERRADO
+  PAUSADO
+  CANCELADO
+}
+
+enum EstadoCaso {
+  NO_FEE
+  REFACTURADO
+  PARA_REFACTURAR
+  ON_GOING
+  COBRADO
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model InformeAutomatico {
+  id               String            @id @default(cuid())
+  titulo           String
+  tipo             TipoInforme
+  fechaInicio      DateTime
+  fechaFin         DateTime
+  filtroPersonalizado Json?          // Para almacenar filtros adicionales
+  contenidoMarkdown String           @db.Text
+  contenidoTextoPlano String         @db.Text
+  datosUtilizados  Json              // JSON de los datos que se enviaron a Gemini
+  prompt           String            @db.Text // El prompt que se envió a Gemini
+  metadatos        Json?             // Metadatos adicionales
+  creadoPor        String?           // Campo de texto libre, sin relación FK
+  fechaGeneracion  DateTime          @default(now())
+  fechaActualizacion DateTime        @updatedAt
+  
+  @@map("informes_automaticos")
+}
+
+enum TipoInforme {
+  ESTADISTICO_GENERAL
+  FINANCIERO
+  CASOS
+  CORRESPONSAL
+  FACTURACION
+}
