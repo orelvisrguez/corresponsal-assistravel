@@ -7,8 +7,6 @@ import { registrarCambio } from '@/lib/caso-historial'
 import { AccionHistorial } from '@prisma/client'
 import { createSafeDate } from '@/lib/dateUtils'
 
-import { createSafeDate } from '@/lib/dateUtils'
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
