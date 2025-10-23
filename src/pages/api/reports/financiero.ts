@@ -122,10 +122,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Top corresponsales
     const corresponsalesStats = casos.reduce((acc, caso) => {
+      // Saltar casos sin corresponsal
+      if (!caso.corresponsal || !caso.corresponsalId) return acc;
+      
       const corrId = caso.corresponsalId;
       if (!acc[corrId]) {
         acc[corrId] = {
-          corresponsal: caso.corresponsal,
+          corresponsalId: caso.corresponsalId,
+          corresponsal: {
+            nombre: caso.corresponsal.nombreCorresponsal || 'Sin nombre',
+            ubicacion: caso.corresponsal.pais || 'Sin país'
+          },
           totalCasos: 0,
           montoTotalUSD: 0,
           montoTotalPesos: 0,
@@ -141,6 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }, {} as Record<number, any>);
 
     const topCorresponsales = Object.values(corresponsalesStats)
+      .filter((c: any) => c.corresponsal && c.corresponsal.nombre)
       .sort((a: any, b: any) => b.montoTotalUSD - a.montoTotalUSD)
       .slice(0, 10);
 
