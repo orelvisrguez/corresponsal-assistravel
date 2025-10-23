@@ -200,12 +200,12 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Casos</h1>
-          <p className="mt-2 text-gray-600">Gestiona la información de los casos</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Casos</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">Gestiona la información de los casos</p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        <Button onClick={() => setIsCreateModalOpen(true)} className="w-full sm:w-auto">
           <PlusIcon className="w-4 h-4 mr-2" />
           Nuevo Caso
         </Button>
@@ -256,8 +256,159 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
         </div>
       ) : (
         <>
-          {/* Vista moderna de tabla con grid */}
-          <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+          {/* Vista de tarjetas para móvil */}
+          <div className="md:hidden space-y-3">
+            {filteredCasos.map((caso) => (
+              <div 
+                key={caso.id} 
+                className={`bg-white rounded-lg shadow-sm border-l-4 ${getCardColorByEstado(caso.estadoDelCaso)} overflow-hidden`}
+              >
+                {/* Header de la tarjeta */}
+                <div className="bg-gradient-to-r from-gray-50 to-white px-4 py-3 border-b border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-bold text-gray-900 text-base mb-1">
+                        {caso.nroCasoAssistravel}
+                      </div>
+                      {caso.nroCasoCorresponsal && (
+                        <div className="text-xs text-gray-500 mb-2">
+                          Ref: {caso.nroCasoCorresponsal}
+                        </div>
+                      )}
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <BuildingOfficeIcon className="w-4 h-4" />
+                        <span className="font-medium">{caso.corresponsal.nombreCorresponsal}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                      <div className={`flex items-center px-2 py-1 text-xs font-medium rounded ${getEstadoInternoColor(caso.estadoInterno)}`}>
+                        {getEstadoInternoLabel(caso.estadoInterno)}
+                      </div>
+                      <div className={`flex items-center px-2 py-1 text-xs font-medium rounded ${getEstadoCasoColor(caso.estadoDelCaso)}`}>
+                        {getEstadoCasoLabel(caso.estadoDelCaso)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contenido de la tarjeta */}
+                <div className="p-4 space-y-3">
+                  {/* Información geográfica */}
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-1 text-sm text-gray-600">
+                      <MapPinIcon className="w-4 h-4" />
+                      <span>{caso.pais}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {caso.informeMedico && (
+                        <div className="flex items-center space-x-1 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                          <CheckCircleIcon className="w-3 h-3" />
+                          <span>Informe</span>
+                        </div>
+                      )}
+                      {caso.tieneFactura && (
+                        <div className="flex items-center space-x-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                          <DocumentTextIcon className="w-3 h-3" />
+                          <span>Factura</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Información financiera */}
+                  <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg p-3 border border-emerald-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-1 text-sm font-medium text-gray-700">
+                        <CurrencyDollarIcon className="w-4 h-4" />
+                        <span>Resumen Financiero</span>
+                      </div>
+                      <div className="text-lg font-bold text-emerald-600">
+                        {formatearMoneda(calcularSumaTotal(caso))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <div className="text-gray-500">Fee</div>
+                        <div className="font-semibold text-gray-900">
+                          {caso.fee ? formatearMoneda(Number(caso.fee)) : '-'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500">USD</div>
+                        <div className="font-semibold text-gray-900">
+                          {caso.costoUsd ? formatearMoneda(Number(caso.costoUsd)) : '-'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500">Agregado</div>
+                        <div className="font-semibold text-gray-900">
+                          {caso.montoAgregado ? formatearMoneda(Number(caso.montoAgregado)) : '-'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Fechas */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Inicio:</span>
+                      <span className="font-medium text-gray-900">{formatDate(caso.fechaInicioCaso)}</span>
+                    </div>
+                    {caso.fechaEmisionFactura && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Emisión:</span>
+                        <span className="font-medium text-gray-900">{formatDate(caso.fechaEmisionFactura)}</span>
+                      </div>
+                    )}
+                    {caso.fechaPagoFactura && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Pago:</span>
+                        <span className="font-medium text-green-600">{formatDate(caso.fechaPagoFactura)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Observaciones */}
+                  {caso.observaciones && (
+                    <div className="pt-2 border-t border-gray-200">
+                      <div className="text-xs text-gray-500 mb-1">Observaciones:</div>
+                      <div className="text-sm text-gray-700 line-clamp-2">
+                        {caso.observaciones}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Acciones */}
+                <div className="bg-gray-50 px-4 py-3 flex justify-end space-x-2 border-t border-gray-200">
+                  <button
+                    onClick={() => openViewModal(caso)}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <EyeIcon className="w-4 h-4" />
+                    <span>Ver</span>
+                  </button>
+                  <button
+                    onClick={() => openEditModal(caso)}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                    <span>Editar</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(caso)}
+                    className="flex items-center space-x-1 px-3 py-2 text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                    <span>Eliminar</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Vista de tabla para desktop */}
+          <div className="hidden md:block bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
             {/* Header de la tabla */}
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
               <div className="grid grid-cols-12 gap-3 items-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -532,7 +683,7 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
         {selectedCaso && (
           <div className="bg-gray-50">
             {/* Header destacado con información principal */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-lg">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sm:p-6 rounded-t-lg">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-3">
@@ -543,7 +694,7 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
                     <div className="flex items-center space-x-2">
                       <BuildingOfficeIcon className="w-5 h-5 text-blue-200" />
                       <span className="text-sm">{selectedCaso.corresponsal.nombreCorresponsal}</span>
@@ -580,9 +731,9 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Resumen financiero destacado */}
-              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl p-6 border border-emerald-200">
+              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl p-4 sm:p-6 border border-emerald-200">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     <CurrencyDollarIcon className="w-6 h-6 text-emerald-600" />
@@ -596,7 +747,7 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div className="bg-white rounded-lg p-4 border border-gray-200">
                     <p className="text-sm text-gray-600 mb-1">Fee</p>
                     <p className="text-lg font-semibold text-gray-900">
@@ -627,16 +778,16 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
               </div>
 
               {/* Grid de secciones */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Información del caso */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
                       <DocumentTextIcon className="w-5 h-5 text-gray-600" />
                       <h3 className="text-lg font-semibold text-gray-900">Información del Caso</h3>
                     </div>
                   </div>
-                  <div className="p-6 space-y-4">
+                  <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between py-2 border-b border-gray-100">
                       <span className="text-sm font-medium text-gray-600">Nro. Assistravel</span>
                       <span className="text-sm font-semibold text-gray-900">{selectedCaso.nroCasoAssistravel}</span>
@@ -678,13 +829,13 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
 
                 {/* Información de facturación */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
                       <DocumentTextIcon className="w-5 h-5 text-gray-600" />
                       <h3 className="text-lg font-semibold text-gray-900">Información de Facturación</h3>
                     </div>
                   </div>
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <div className="flex items-center justify-between py-2 border-b border-gray-100 mb-4">
                       <span className="text-sm font-medium text-gray-600">Tiene Factura</span>
                       <div className="flex items-center space-x-1">
@@ -736,13 +887,13 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
               {/* Observaciones */}
               {selectedCaso.observaciones && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
                     <div className="flex items-center space-x-2">
                       <DocumentTextIcon className="w-5 h-5 text-gray-600" />
                       <h3 className="text-lg font-semibold text-gray-900">Observaciones</h3>
                     </div>
                   </div>
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                       <p className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
                         {selectedCaso.observaciones}
@@ -753,10 +904,10 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
               )}
 
               {/* Botones de acción */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => openEditModal(selectedCaso)}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
                 >
                   <PencilIcon className="w-4 h-4 mr-2" />
                   Editar Caso
@@ -766,7 +917,7 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
                     setIsViewModalOpen(false)
                     setSelectedCaso(null)
                   }}
-                  className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors w-full sm:w-auto"
                 >
                   Cerrar
                 </button>
