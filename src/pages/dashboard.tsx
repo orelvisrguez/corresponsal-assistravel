@@ -243,48 +243,7 @@ export default function Dashboard() {
     }
   ]
 
-  const estadosInternosCards = [
-    {
-      name: 'Pausados',
-      value: stats.casosPausados,
-      icon: PauseCircleIcon,
-      color: 'bg-orange-500'
-    },
-    {
-      name: 'Cancelados',
-      value: stats.casosCancelados,
-      icon: XCircleIcon,
-      color: 'bg-red-500'
-    }
-  ]
 
-  const estadosCasoCards = [
-    {
-      name: 'No Fee',
-      value: stats.estadosCaso.noFee,
-      color: 'bg-gray-100 text-gray-800'
-    },
-    {
-      name: 'Refacturado',
-      value: stats.estadosCaso.refacturado,
-      color: 'bg-blue-100 text-blue-800'
-    },
-    {
-      name: 'Para Refacturar',
-      value: stats.estadosCaso.paraRefacturar,
-      color: 'bg-orange-100 text-orange-800'
-    },
-    {
-      name: 'On Going',
-      value: stats.estadosCaso.onGoing,
-      color: 'bg-purple-100 text-purple-800'
-    },
-    {
-      name: 'Cobrado',
-      value: stats.estadosCaso.cobrado,
-      color: 'bg-green-100 text-green-800'
-    }
-  ]
 
   return (
     <>
@@ -365,110 +324,172 @@ export default function Dashboard() {
           <KPIsAvanzados casos={allCasos} autoFetch={false} />
         </div>
 
-        {/* Estados Internos y Información Adicional */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* Estados Internos Adicionales */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Estados Internos</h3>
-              <QuestionMarkCircleIcon className="h-5 w-5 text-gray-400" title="Estados adicionales de casos" />
-            </div>
-            <div className="space-y-3">
-              {estadosInternosCards.map((estado) => {
-                const Icon = estado.icon
-                return (
-                  <div key={estado.name} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                    <div className="flex items-center">
-                      <div className={`p-2 rounded-md ${estado.color}`}>
-                        <Icon className="h-4 w-4 text-white" />
-                      </div>
-                      <span className="ml-3 text-sm font-medium text-gray-700">{estado.name}</span>
-                    </div>
-                    <span className="text-lg font-bold text-gray-900">{estado.value}</span>
-                  </div>
-                )
-              })}
-            </div>
+        {/* Estados Internos - Bloques Separados */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-900">Estados Internos</h3>
+            <QuestionMarkCircleIcon className="h-6 w-6 text-gray-400 cursor-help" title="Estados internos de los casos" />
           </div>
-
-          {/* Información Financiera */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Resumen Financiero</h3>
-              <BanknotesIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                <span className="text-sm font-medium text-green-700">Total USD</span>
-                <span className="text-lg font-bold text-green-900">{formatCurrency(stats.totalMontoUSD)}</span>
-              </div>
-              
-              {/* Monedas Locales Separadas */}
-              {stats.monedasLocales.length > 0 ? (
-                <>
-                  <div className="border-t pt-3">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">Monedas Locales</h4>
-                    <div className="space-y-2">
-                      {stats.monedasLocales.map((moneda, index) => {
-                        const bgColors = ['bg-blue-50', 'bg-purple-50', 'bg-indigo-50', 'bg-teal-50', 'bg-orange-50']
-                        const textColors = ['text-blue-700', 'text-purple-700', 'text-indigo-700', 'text-teal-700', 'text-orange-700']
-                        const boldColors = ['text-blue-900', 'text-purple-900', 'text-indigo-900', 'text-teal-900', 'text-orange-900']
-                        
-                        const bgColor = bgColors[index % bgColors.length]
-                        const textColor = textColors[index % textColors.length]
-                        const boldColor = boldColors[index % boldColors.length]
-                        
-                        return (
-                          <div key={moneda.code} className={`flex justify-between items-center p-3 ${bgColor} rounded-lg`}>
-                            <div className="flex flex-col">
-                              <span className={`text-sm font-medium ${textColor}`}>Total {moneda.code}</span>
-                              <span className={`text-xs ${textColor} opacity-75`}>{moneda.count} casos</span>
-                            </div>
-                            <span className={`text-lg font-bold ${boldColor}`}>
-                              {moneda.total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {moneda.code}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-500">Sin monedas locales registradas</span>
-                  <span className="text-sm text-gray-400">-</span>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Estados Internos con bloques individuales */}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-green-50 border border-green-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                  <CheckCircleIcon className="w-6 h-6 text-white" />
                 </div>
-              )}
-              
-              <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border-t pt-3">
-                <span className="text-sm font-medium text-purple-700">% Facturados</span>
-                <span className="text-lg font-bold text-purple-900">
-                  {stats.totalCasos > 0 ? Math.round((stats.casosConFactura / stats.totalCasos) * 100) : 0}%
-                </span>
+                <span className="ml-3 text-sm font-semibold text-green-800">Abiertos</span>
               </div>
+              <span className="text-2xl font-bold text-green-900">{stats.casosAbiertos}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
+                  <DocumentCheckIcon className="w-6 h-6 text-white" />
+                </div>
+                <span className="ml-3 text-sm font-semibold text-gray-800">Cerrados</span>
+              </div>
+              <span className="text-2xl font-bold text-gray-900">{stats.casosCerrados}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-orange-50 border border-orange-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <PauseCircleIcon className="w-6 h-6 text-white" />
+                </div>
+                <span className="ml-3 text-sm font-semibold text-orange-800">Pausados</span>
+              </div>
+              <span className="text-2xl font-bold text-orange-900">{stats.casosPausados}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                  <XCircleIcon className="w-6 h-6 text-white" />
+                </div>
+                <span className="ml-3 text-sm font-semibold text-red-800">Cancelados</span>
+              </div>
+              <span className="text-2xl font-bold text-red-900">{stats.casosCancelados}</span>
             </div>
           </div>
         </div>
 
-        {/* Estados de Casos */}
+        {/* Estados del Caso - Bloques Separados */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-gray-900">Estados del Caso</h3>
+            <QuestionMarkCircleIcon className="h-6 w-6 text-gray-400 cursor-help" title="Estados del proceso de caso" />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 border border-gray-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">NF</span>
+                </div>
+                <span className="ml-3 text-sm font-semibold text-gray-800">No Fee</span>
+              </div>
+              <span className="text-2xl font-bold text-gray-900">{stats.estadosCaso.noFee}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">RF</span>
+                </div>
+                <span className="ml-3 text-sm font-semibold text-blue-800">Refacturado</span>
+              </div>
+              <span className="text-2xl font-bold text-blue-900">{stats.estadosCaso.refacturado}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-orange-50 border border-orange-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">PR</span>
+                </div>
+                <span className="ml-3 text-sm font-semibold text-orange-800">Para Refacturar</span>
+              </div>
+              <span className="text-2xl font-bold text-orange-900">{stats.estadosCaso.paraRefacturar}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-purple-50 border border-purple-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">OG</span>
+                </div>
+                <span className="ml-3 text-sm font-semibold text-purple-800">On Going</span>
+              </div>
+              <span className="text-2xl font-bold text-purple-900">{stats.estadosCaso.onGoing}</span>
+            </div>
+            
+            <div className="flex items-center justify-between p-4 rounded-lg bg-green-50 border border-green-200">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                  <CheckCircleIcon className="w-6 h-6 text-white" />
+                </div>
+                <span className="ml-3 text-sm font-semibold text-green-800">Cobrado</span>
+              </div>
+              <span className="text-2xl font-bold text-green-900">{stats.estadosCaso.cobrado}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Información Financiera */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Estados de Casos</h3>
-            <p className="text-sm text-gray-500">Distribución por estado del caso</p>
+            <h3 className="text-lg font-semibold text-gray-900">Resumen Financiero</h3>
+            <BanknotesIcon className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {estadosCasoCards.map((estado) => (
-              <div key={estado.name} className="text-center">
-                <div className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${estado.color} w-full justify-center`}>
-                  {estado.name}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+              <span className="text-sm font-medium text-green-700">Total USD</span>
+              <span className="text-lg font-bold text-green-900">{formatCurrency(stats.totalMontoUSD)}</span>
+            </div>
+            
+            {/* Monedas Locales Separadas */}
+            {stats.monedasLocales.length > 0 ? (
+              <>
+                <div className="border-t pt-3">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Monedas Locales</h4>
+                  <div className="space-y-2">
+                    {stats.monedasLocales.map((moneda, index) => {
+                      const bgColors = ['bg-blue-50', 'bg-purple-50', 'bg-indigo-50', 'bg-teal-50', 'bg-orange-50']
+                      const textColors = ['text-blue-700', 'text-purple-700', 'text-indigo-700', 'text-teal-700', 'text-orange-700']
+                      const boldColors = ['text-blue-900', 'text-purple-900', 'text-indigo-900', 'text-teal-900', 'text-orange-900']
+                      
+                      const bgColor = bgColors[index % bgColors.length]
+                      const textColor = textColors[index % textColors.length]
+                      const boldColor = boldColors[index % boldColors.length]
+                      
+                      return (
+                        <div key={moneda.code} className={`flex justify-between items-center p-3 ${bgColor} rounded-lg`}>
+                          <div className="flex flex-col">
+                            <span className={`text-sm font-medium ${textColor}`}>Total {moneda.code}</span>
+                            <span className={`text-xs ${textColor} opacity-75`}>{moneda.count} casos</span>
+                          </div>
+                          <span className={`text-lg font-bold ${boldColor}`}>
+                            {moneda.total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {moneda.code}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-                <div className="mt-2 text-2xl font-bold text-gray-900">{estado.value}</div>
-                <div className="text-xs text-gray-500">
-                  {stats.totalCasos > 0 ? Math.round((estado.value / stats.totalCasos) * 100) : 0}%
-                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-500">Sin monedas locales registradas</span>
+                <span className="text-sm text-gray-400">-</span>
               </div>
-            ))}
+            )}
+            
+            <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border-t pt-3">
+              <span className="text-sm font-medium text-purple-700">% Facturados</span>
+              <span className="text-lg font-bold text-purple-900">
+                {stats.totalCasos > 0 ? Math.round((stats.casosConFactura / stats.totalCasos) * 100) : 0}%
+              </span>
+            </div>
           </div>
         </div>
 
