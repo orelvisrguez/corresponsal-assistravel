@@ -17,7 +17,8 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   GlobeAltIcon,
-  EyeIcon
+  EyeIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
@@ -147,16 +148,34 @@ export default function CorresponsalList({ corresponsales, onRefresh }: Correspo
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Corresponsales</h1>
-          <p className="mt-2 text-gray-600">Gestiona la información de los corresponsales</p>
+    <div className="space-y-8">
+      {/* Header Modernizado */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-8 shadow-2xl">
+        <div className="absolute inset-0 bg-black opacity-10"></div>
+        <div className="relative z-10 flex justify-between items-center">
+          <div className="text-white">
+            <h1 className="text-4xl font-bold mb-2">Gestión de Corresponsales</h1>
+            <p className="text-blue-100 text-lg">Administra y coordina todos tus corresponsales internacionales</p>
+            <div className="mt-4 flex items-center space-x-6 text-sm">
+              <div className="flex items-center">
+                <UserGroupIcon className="w-5 h-5 mr-2" />
+                <span>{corresponsales.length} Corresponsal{corresponsales.length !== 1 ? 'es' : ''}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <Button 
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-white text-blue-700 hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              size="lg"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" />
+              Nuevo Corresponsal
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          <PlusIcon className="w-4 h-4 mr-2" />
-          Nuevo Corresponsal
-        </Button>
+        <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-white opacity-5 rounded-full"></div>
+        <div className="absolute -top-4 -left-4 w-24 h-24 bg-white opacity-5 rounded-full"></div>
       </div>
 
       {/* Componente de búsqueda */}
@@ -168,119 +187,170 @@ export default function CorresponsalList({ corresponsales, onRefresh }: Correspo
       />
 
       {filteredCorresponsales.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
+        <div className="text-center py-16 bg-white rounded-2xl shadow-xl border border-gray-100">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+            <UserGroupIcon className="h-12 w-12 text-blue-500" />
+          </div>
           {corresponsales.length === 0 ? (
             <>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay corresponsales</h3>
-              <p className="mt-1 text-sm text-gray-500">Comienza creando tu primer corresponsal.</p>
-              <div className="mt-6">
-                <Button onClick={() => setIsCreateModalOpen(true)}>
-                  <PlusIcon className="w-4 h-4 mr-2" />
-                  Nuevo Corresponsal
-                </Button>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay corresponsales</h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">Comienza creando tu primer corresponsal para gestionar tus relaciones internacionales.</p>
+              <Button 
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                size="lg"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                Crear Primer Corresponsal
+              </Button>
             </>
           ) : (
             <>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No se encontraron corresponsales</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                No hay corresponsales que coincidan con la búsqueda.
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron corresponsales</h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                No hay corresponsales que coincidan con tu búsqueda actual.
               </p>
-              <div className="mt-6">
-                <Button 
-                  onClick={() => setSearchTerm('')}
-                  variant="secondary"
-                >
-                  Limpiar búsqueda
-                </Button>
-              </div>
+              <Button 
+                onClick={() => setSearchTerm('')}
+                variant="secondary"
+                className="hover:shadow-lg transition-all duration-300"
+                size="lg"
+              >
+                Limpiar búsqueda
+              </Button>
             </>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredCorresponsales.map((corresponsal) => (
-            <div key={corresponsal.id} className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h3 
-                  className="text-lg font-semibold text-gray-900 truncate cursor-pointer hover:text-blue-600 transition-colors"
-                  onClick={() => openViewMode(corresponsal)}
-                  title="Ver detalles y casos del corresponsal"
-                >
-                  {formatCorresponsalNombre(corresponsal.nombreCorresponsal)}
-                </h3>
-                <div className="flex space-x-2">
-                  <button
+            <div 
+              key={corresponsal.id} 
+              className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 overflow-hidden"
+            >
+              {/* Header de la card con gradiente */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-full -translate-y-10 translate-x-10"></div>
+                <div className="absolute bottom-0 left-0 w-16 h-16 bg-white opacity-10 rounded-full translate-y-8 -translate-x-8"></div>
+                
+                <div className="relative z-10 flex justify-between items-start mb-4">
+                  <h3 
+                    className="text-xl font-bold truncate cursor-pointer hover:text-blue-100 transition-colors duration-300 group-hover:underline"
                     onClick={() => openViewMode(corresponsal)}
-                    className="text-gray-400 hover:text-green-600 transition-colors"
-                    title="Ver detalles y casos"
+                    title="Ver detalles y casos del corresponsal"
                   >
-                    <EyeIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => openEditModal(corresponsal)}
-                    className="text-gray-400 hover:text-blue-600 transition-colors"
-                    title="Editar corresponsal"
-                  >
-                    <PencilIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(corresponsal)}
-                    className="text-gray-400 hover:text-red-600 transition-colors"
-                    title="Eliminar corresponsal"
-                  >
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
+                    {formatCorresponsalNombre(corresponsal.nombreCorresponsal)}
+                  </h3>
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => openViewMode(corresponsal)}
+                      className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all duration-300 transform hover:scale-110"
+                      title="Ver detalles y casos"
+                    >
+                      <EyeIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => openEditModal(corresponsal)}
+                      className="p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all duration-300 transform hover:scale-110"
+                      title="Editar corresponsal"
+                    >
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(corresponsal)}
+                      className="p-2 bg-red-500 bg-opacity-20 hover:bg-opacity-40 rounded-lg transition-all duration-300 transform hover:scale-110"
+                      title="Eliminar corresponsal"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Badge de casos */}
+                <div className="relative z-10">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white bg-opacity-25 backdrop-blur-sm">
+                    {corresponsal.casos.length} caso{corresponsal.casos.length !== 1 ? 's' : ''} activo{corresponsal.casos.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
               </div>
               
-              <div className="space-y-2 text-sm text-gray-600">
-                {corresponsal.nombreContacto && (
-                  <div className="flex items-center">
-                    <UserGroupIcon className="w-4 h-4 mr-2 text-gray-400" />
-                    {corresponsal.nombreContacto}
-                  </div>
-                )}
-                
-                {corresponsal.email && (
-                  <div className="flex items-center">
-                    <EnvelopeIcon className="w-4 h-4 mr-2 text-gray-400" />
-                    <a href={`mailto:${corresponsal.email}`} className="text-blue-600 hover:underline">
-                      {corresponsal.email}
-                    </a>
-                  </div>
-                )}
-                
-                {corresponsal.nroTelefono && (
-                  <div className="flex items-center">
-                    <PhoneIcon className="w-4 h-4 mr-2 text-gray-400" />
-                    <a href={`tel:${corresponsal.nroTelefono}`} className="text-blue-600 hover:underline">
-                      {corresponsal.nroTelefono}
-                    </a>
-                  </div>
-                )}
-                
-                {corresponsal.web && (
-                  <div className="flex items-center">
-                    <GlobeAltIcon className="w-4 h-4 mr-2 text-gray-400" />
-                    <a 
-                      href={corresponsal.web} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-blue-600 hover:underline truncate"
-                    >
-                      {corresponsal.web}
-                    </a>
-                  </div>
-                )}
-                
-                <div className="pt-2 mt-4 border-t">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{formatPais(corresponsal.pais)}</span>
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      {corresponsal.casos.length} caso{corresponsal.casos.length !== 1 ? 's' : ''}
-                    </span>
+              {/* Contenido de la card */}
+              <div className="p-6">
+                <div className="space-y-4">
+                  {corresponsal.nombreContacto && (
+                    <div className="flex items-center text-gray-700">
+                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mr-3">
+                        <UserGroupIcon className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Contacto</p>
+                        <p className="font-medium">{corresponsal.nombreContacto}</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {corresponsal.email && (
+                    <div className="flex items-center text-gray-700">
+                      <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mr-3">
+                        <EnvelopeIcon className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
+                        <a 
+                          href={`mailto:${corresponsal.email}`} 
+                          className="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-300 truncate block"
+                        >
+                          {corresponsal.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {corresponsal.nroTelefono && (
+                    <div className="flex items-center text-gray-700">
+                      <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center mr-3">
+                        <PhoneIcon className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Teléfono</p>
+                        <a 
+                          href={`tel:${corresponsal.nroTelefono}`} 
+                          className="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-300 truncate block"
+                        >
+                          {corresponsal.nroTelefono}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {corresponsal.web && (
+                    <div className="flex items-center text-gray-700">
+                      <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mr-3">
+                        <GlobeAltIcon className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Sitio Web</p>
+                        <a 
+                          href={corresponsal.web} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-300 truncate block"
+                        >
+                          {corresponsal.web.replace(/^https?:\/\//, '')}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* País con indicador visual */}
+                  <div className="flex items-center text-gray-700 pt-4 border-t border-gray-100">
+                    <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mr-3">
+                      <MapPinIcon className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">País</p>
+                      <p className="font-semibold text-lg">{formatPais(corresponsal.pais)}</p>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -57,46 +57,49 @@ export default function HelpCard({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+    <div className={`bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden ${className}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors rounded-t-lg"
+        className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 rounded-t-2xl group"
       >
         <div className="flex items-center">
-          <QuestionMarkCircleIcon className="h-5 w-5 text-blue-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+            <QuestionMarkCircleIcon className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+            {description && <p className="text-gray-600 text-sm mt-1">{description}</p>}
+          </div>
         </div>
-        {isExpanded ? (
-          <ChevronUpIcon className="h-5 w-5 text-gray-500" />
-        ) : (
-          <ChevronDownIcon className="h-5 w-5 text-gray-500" />
-        )}
+        <div className="flex-shrink-0">
+          {isExpanded ? (
+            <ChevronUpIcon className="h-6 w-6 text-gray-500 transform group-hover:scale-110 transition-transform duration-300" />
+          ) : (
+            <ChevronDownIcon className="h-6 w-6 text-gray-500 transform group-hover:scale-110 transition-transform duration-300" />
+          )}
+        </div>
       </button>
       
       {isExpanded && (
-        <div className="px-6 pb-6">
-          {description && (
-            <div className="mb-4">
-              <p className="text-gray-600 text-sm">{description}</p>
-            </div>
-          )}
-          
+        <div className="px-8 pb-8">
           {children ? (
             <div>{children}</div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {sections.map((section, index) => (
                 <div
                   key={index}
-                  className={`p-4 rounded-lg border ${getColorClasses(section.type)}`}
+                  className={`p-6 rounded-xl border-2 ${getColorClasses(section.type)} shadow-sm hover:shadow-md transition-all duration-300`}
                 >
                   <div className="flex items-start">
-                    <div className="mr-3 mt-0.5">
-                      {getIcon(section.type)}
+                    <div className="mr-4 mt-1">
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                        {getIcon(section.type)}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium mb-1">{section.title}</h4>
-                      <p className="text-sm whitespace-pre-line">{section.content}</p>
+                    <div className="flex-1">
+                      <h4 className="font-bold mb-3 text-lg">{section.title}</h4>
+                      <p className="text-sm leading-relaxed whitespace-pre-line">{section.content}</p>
                     </div>
                   </div>
                 </div>
