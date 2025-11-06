@@ -190,29 +190,38 @@ export default function CasoForm({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Select
-            label="Corresponsal *"
-            options={corresponsalOptions}
-            placeholder="Selecciona un corresponsal"
-            {...register('corresponsalId', { valueAsNumber: true })}
-            error={errors.corresponsalId?.message}
-          />
+          <div>
+            <Select
+              label="Corresponsal *"
+              options={corresponsalOptions}
+              placeholder="Selecciona un corresponsal"
+              {...register('corresponsalId', { valueAsNumber: true })}
+              error={errors.corresponsalId?.message}
+              className="text-gray-900"
+            />
+          </div>
           
-          <Input
-            label="Nro. Caso Assistravel *"
-            placeholder="Número único del caso"
-            {...register('nroCasoAssistravel')}
-            error={errors.nroCasoAssistravel?.message}
-          />
+          <div>
+            <Input
+              label="Nro. Caso Assistravel *"
+              placeholder="Número único del caso"
+              {...register('nroCasoAssistravel')}
+              error={errors.nroCasoAssistravel?.message}
+              className="text-gray-900 placeholder-gray-500"
+            />
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Nro. Caso Corresponsal"
-            placeholder="Número de referencia del corresponsal"
-            {...register('nroCasoCorresponsal')}
-            error={errors.nroCasoCorresponsal?.message}
-          />
+          <div>
+            <Input
+              label="Nro. Caso Corresponsal"
+              placeholder="Número de referencia del corresponsal"
+              {...register('nroCasoCorresponsal')}
+              error={errors.nroCasoCorresponsal?.message}
+              className="text-gray-900 placeholder-gray-500"
+            />
+          </div>
           
           <div>
             <Input
@@ -220,20 +229,24 @@ export default function CasoForm({
               type="date"
               {...register('fechaInicioCaso')}
               error={errors.fechaInicioCaso?.message}
+              className="text-gray-900"
             />
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AutoCompleteInput
-            label="País *"
-            value={watch('pais') || ''}
-            onChange={(value) => setValue('pais', value)}
-            options={PAISES}
-            placeholder="Selecciona o escribe un país"
-            error={errors.pais?.message}
-            required
-          />
+          <div>
+            <AutoCompleteInput
+              label="País *"
+              value={watch('pais') || ''}
+              onChange={(value) => setValue('pais', value)}
+              options={PAISES}
+              placeholder="Selecciona o escribe un país"
+              error={errors.pais?.message}
+              required
+              className="text-gray-900"
+            />
+          </div>
           
           <div className="flex items-center space-x-4 pt-6">
             <label className="flex items-center">
@@ -242,7 +255,7 @@ export default function CasoForm({
                 {...register('informeMedico')}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">Informe Médico</span>
+              <span className="ml-2 text-sm text-gray-900">Informe Médico</span>
             </label>
           </div>
         </div>
@@ -273,32 +286,41 @@ export default function CasoForm({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input
-            label="Fee"
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            {...register('fee', { valueAsNumber: true })}
-            error={errors.fee?.message}
-          />
+          <div>
+            <Input
+              label="Fee"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              {...register('fee', { valueAsNumber: true })}
+              error={errors.fee?.message}
+              className="text-gray-900 placeholder-gray-500"
+            />
+          </div>
           
-          <Input
-            label="Costo USD"
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            {...register('costoUsd', { valueAsNumber: true })}
-            error={errors.costoUsd?.message}
-          />
+          <div>
+            <Input
+              label="Costo USD"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              {...register('costoUsd', { valueAsNumber: true })}
+              error={errors.costoUsd?.message}
+              className="text-gray-900 placeholder-gray-500"
+            />
+          </div>
           
-          <Input
-            label="Monto Agregado"
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            {...register('montoAgregado', { valueAsNumber: true })}
-            error={errors.montoAgregado?.message}
-          />
+          <div>
+            <Input
+              label="Monto Agregado"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              {...register('montoAgregado', { valueAsNumber: true })}
+              error={errors.montoAgregado?.message}
+              className="text-gray-900 placeholder-gray-500"
+            />
+          </div>
         </div>
 
         <div className="space-y-4 mt-4">
@@ -308,22 +330,28 @@ export default function CasoForm({
               Especifica la moneda local y el monto correspondiente para un mejor seguimiento financiero
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Símbolo Moneda *"
-                options={MONEDAS}
-                placeholder="Seleccionar moneda"
-                {...register('simboloMoneda')}
-                error={errors.simboloMoneda?.message}
-              />
+              <div>
+                <Select
+                  label="Símbolo Moneda *"
+                  options={MONEDAS}
+                  placeholder="Seleccionar moneda"
+                  {...register('simboloMoneda')}
+                  error={errors.simboloMoneda?.message}
+                  className="text-gray-900"
+                />
+              </div>
               
-              <Input
-                label="Costo Moneda Local"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                {...register('costoMonedaLocal', { valueAsNumber: true })}
-                error={errors.costoMonedaLocal?.message}
-              />
+              <div>
+                <Input
+                  label="Costo Moneda Local"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  {...register('costoMonedaLocal', { valueAsNumber: true })}
+                  error={errors.costoMonedaLocal?.message}
+                  className="text-gray-900 placeholder-gray-500"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -355,34 +383,46 @@ export default function CasoForm({
         
         {/* Campos de facturación siempre disponibles */}
         <div className="space-y-4 bg-white rounded-lg p-4 border border-orange-200">
-          <Input
-            label="Número de Factura"
-            placeholder="Ej: FAC-2024-001"
-            {...register('nroFactura')}
-            error={errors.nroFactura?.message}
-          />
+          <div>
+            <Input
+              label="Número de Factura"
+              placeholder="Ej: FAC-2024-001"
+              {...register('nroFactura')}
+              error={errors.nroFactura?.message}
+              className="text-gray-900 placeholder-gray-500"
+            />
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              label="Fecha Emisión"
-              type="date"
-              {...register('fechaEmisionFactura')}
-              error={errors.fechaEmisionFactura?.message}
-            />
+            <div>
+              <Input
+                label="Fecha Emisión"
+                type="date"
+                {...register('fechaEmisionFactura')}
+                error={errors.fechaEmisionFactura?.message}
+                className="text-gray-900"
+              />
+            </div>
             
-            <Input
-              label="Fecha Vencimiento"
-              type="date"
-              {...register('fechaVencimientoFactura')}
-              error={errors.fechaVencimientoFactura?.message}
-            />
+            <div>
+              <Input
+                label="Fecha Vencimiento"
+                type="date"
+                {...register('fechaVencimientoFactura')}
+                error={errors.fechaVencimientoFactura?.message}
+                className="text-gray-900"
+              />
+            </div>
             
-            <Input
-              label="Fecha Pago"
-              type="date"
-              {...register('fechaPagoFactura')}
-              error={errors.fechaPagoFactura?.message}
-            />
+            <div>
+              <Input
+                label="Fecha Pago"
+                type="date"
+                {...register('fechaPagoFactura')}
+                error={errors.fechaPagoFactura?.message}
+                className="text-gray-900"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -400,32 +440,38 @@ export default function CasoForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Select
-            label="Estado Interno *"
-            options={estadoInternoOptions}
-            placeholder="Selecciona el estado interno"
-            {...register('estadoInterno')}
-            error={errors.estadoInterno?.message}
-          />
+          <div>
+            <Select
+              label="Estado Interno *"
+              options={estadoInternoOptions}
+              placeholder="Selecciona el estado interno"
+              {...register('estadoInterno')}
+              error={errors.estadoInterno?.message}
+              className="text-gray-900"
+            />
+          </div>
           
-          <Select
-            label="Estado del Caso *"
-            options={estadoCasoOptions}
-            placeholder="Selecciona el estado del caso"
-            {...register('estadoDelCaso')}
-            error={errors.estadoDelCaso?.message}
-          />
+          <div>
+            <Select
+              label="Estado del Caso *"
+              options={estadoCasoOptions}
+              placeholder="Selecciona el estado del caso"
+              {...register('estadoDelCaso')}
+              error={errors.estadoDelCaso?.message}
+              className="text-gray-900"
+            />
+          </div>
         </div>
 
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-900 mb-2">
             Observaciones
           </label>
           <textarea
             {...register('observaciones')}
             rows={4}
             placeholder="Notas adicionales sobre el caso..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
           />
           {errors.observaciones && (
             <p className="mt-1 text-sm text-red-600">{errors.observaciones.message}</p>

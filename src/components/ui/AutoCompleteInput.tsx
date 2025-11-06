@@ -12,6 +12,7 @@ interface AutoCompleteInputProps {
   error?: string
   required?: boolean
   name?: string
+  className?: string
 }
 
 export default function AutoCompleteInput({
@@ -22,7 +23,8 @@ export default function AutoCompleteInput({
   label,
   error,
   required = false,
-  name
+  name,
+  className = ''
 }: AutoCompleteInputProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState(value)
@@ -122,6 +124,7 @@ export default function AutoCompleteInput({
               ? 'border-red-300 text-red-900 placeholder-red-300' 
               : 'border-gray-300 text-gray-900 placeholder-gray-400'
             }
+            ${className}
           `}
         />
         
