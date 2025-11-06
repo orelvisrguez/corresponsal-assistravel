@@ -144,7 +144,7 @@ export default function DeleteConfirmModal({
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder="Escribe 'tengo' para confirmar"
                 disabled={!hasReadWarning || loading}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors text-gray-900 placeholder-gray-500 ${
                   !hasReadWarning 
                     ? 'bg-gray-100 border-gray-300 text-gray-500' 
                     : confirmText.toLowerCase() === 'tengo'

@@ -187,7 +187,7 @@ export default function CasoHistorial({ casoId, compact = false }: CasoHistorial
                   value={filtroUsuario}
                   onChange={(e) => setFiltroUsuario(e.target.value)}
                   placeholder="Email o nombre"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
                 />
               </div>
               <div>
@@ -198,7 +198,7 @@ export default function CasoHistorial({ casoId, compact = false }: CasoHistorial
                   type="date"
                   value={filtroFechaInicio}
                   onChange={(e) => setFiltroFechaInicio(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
                 />
               </div>
               <div>
@@ -209,7 +209,7 @@ export default function CasoHistorial({ casoId, compact = false }: CasoHistorial
                   type="date"
                   value={filtroFechaFin}
                   onChange={(e) => setFiltroFechaFin(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder-gray-500"
                 />
               </div>
               <div className="flex items-end gap-2">

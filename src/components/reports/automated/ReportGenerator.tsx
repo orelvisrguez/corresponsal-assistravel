@@ -260,7 +260,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
               value={formData.titulo}
               onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
               placeholder="Ej: Informe Financiero - Octubre 2025"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
             />
           </div>
 
@@ -340,7 +340,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
                   type="date"
                   value={formData.fechaInicio}
                   onChange={(e) => setFormData(prev => ({ ...prev, fechaInicio: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
               <div>
@@ -351,7 +351,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
                   type="date"
                   value={formData.fechaFin}
                   onChange={(e) => setFormData(prev => ({ ...prev, fechaFin: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
             </div>
@@ -386,7 +386,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
                   ...prev,
                   filtrosAdicionales: { ...prev.filtrosAdicionales, corresponsalId: e.target.value }
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               />
               <select
                 value={formData.filtrosAdicionales.estadoInterno}
@@ -394,7 +394,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
                   ...prev,
                   filtrosAdicionales: { ...prev.filtrosAdicionales, estadoInterno: e.target.value }
                 }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               >
                 <option value="">Todos los estados</option>
                 <option value="ABIERTO">Abierto</option>

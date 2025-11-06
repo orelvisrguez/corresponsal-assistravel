@@ -96,7 +96,7 @@ export default function SearchAndFilters({
             placeholder="Buscar casos... (número, país, observaciones)"
             value={filters.searchTerm}
             onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 placeholder-gray-500"
           />
         </div>
         
@@ -172,7 +172,7 @@ export default function SearchAndFilters({
               <select
                 value={filters.corresponsalId}
                 onChange={(e) => handleFilterChange('corresponsalId', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
               >
                 <option value="">Todos los corresponsales</option>
                 {corresponsales.map((corresponsal) => (
@@ -192,7 +192,7 @@ export default function SearchAndFilters({
               <select
                 value={filters.estadoInterno}
                 onChange={(e) => handleFilterChange('estadoInterno', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
               >
                 {estadosInternos.map((estado) => (
                   <option key={estado.value} value={estado.value}>
@@ -211,7 +211,7 @@ export default function SearchAndFilters({
               <select
                 value={filters.estadoDelCaso}
                 onChange={(e) => handleFilterChange('estadoDelCaso', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
               >
                 {estadosCaso.map((estado) => (
                   <option key={estado.value} value={estado.value}>
@@ -235,7 +235,7 @@ export default function SearchAndFilters({
                 placeholder="Filtrar por país"
                 value={filters.pais}
                 onChange={(e) => handleFilterChange('pais', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
               />
             </div>
 
@@ -247,7 +247,7 @@ export default function SearchAndFilters({
               <select
                 value={filters.informeMedico}
                 onChange={(e) => handleFilterChange('informeMedico', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
               >
                 {opcionesSiNo.map((opcion) => (
                   <option key={opcion.value} value={opcion.value}>
@@ -265,7 +265,7 @@ export default function SearchAndFilters({
               <select
                 value={filters.tieneFactura}
                 onChange={(e) => handleFilterChange('tieneFactura', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
               >
                 {opcionesSiNo.map((opcion) => (
                   <option key={opcion.value} value={opcion.value}>
@@ -291,7 +291,7 @@ export default function SearchAndFilters({
                 <select
                   value={filters.tipoFecha}
                   onChange={(e) => handleFilterChange('tipoFecha', e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
                 >
                   <option value="fechaInicioCaso">Fecha de Inicio del Caso</option>
                   <option value="fechaEmisionFactura">Fecha de Emisión de Factura</option>
@@ -308,7 +308,7 @@ export default function SearchAndFilters({
                     placeholder="Desde"
                     value={filters.fechaDesde}
                     onChange={(e) => handleFilterChange('fechaDesde', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
                   />
                   <p className="text-xs text-gray-500 mt-1">Desde</p>
                 </div>
@@ -318,7 +318,7 @@ export default function SearchAndFilters({
                     placeholder="Hasta"
                     value={filters.fechaHasta}
                     onChange={(e) => handleFilterChange('fechaHasta', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
                   />
                   <p className="text-xs text-gray-500 mt-1">Hasta</p>
                 </div>
@@ -339,7 +339,7 @@ export default function SearchAndFilters({
                     placeholder="Desde"
                     value={filters.costoDesde}
                     onChange={(e) => handleFilterChange('costoDesde', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
                   />
                   <p className="text-xs text-gray-500 mt-1">Mínimo</p>
                 </div>
@@ -349,7 +349,7 @@ export default function SearchAndFilters({
                     placeholder="Hasta"
                     value={filters.costoHasta}
                     onChange={(e) => handleFilterChange('costoHasta', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 bg-white"
                   />
                   <p className="text-xs text-gray-500 mt-1">Máximo</p>
                 </div>

@@ -61,7 +61,7 @@ export default function UserForm({
             type="text"
             id="name"
             {...register('name', { required: 'El nombre es requerido' })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
             placeholder="Ingresa el nombre completo"
           />
           {errors.name && (
@@ -83,7 +83,7 @@ export default function UserForm({
                 message: 'Email inválido'
               }
             })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
             placeholder="usuario@ejemplo.com"
           />
           {errors.email && (
@@ -108,7 +108,7 @@ export default function UserForm({
                 message: 'La contraseña debe tener al menos 6 caracteres'
               }
             })}
-            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
             placeholder={isEdit ? "Dejar vacío para mantener actual" : "Mínimo 6 caracteres"}
           />
           <button
@@ -147,7 +147,7 @@ export default function UserForm({
           <select
             id="role"
             {...register('role', { required: 'El rol es requerido' })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           >
             {USER_ROLES.map((role) => (
               <option key={role.value} value={role.value}>
@@ -167,7 +167,7 @@ export default function UserForm({
           <select
             id="status"
             {...register('status', { required: 'El estado es requerido' })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
           >
             {USER_STATUS.map((status) => (
               <option key={status.value} value={status.value}>
