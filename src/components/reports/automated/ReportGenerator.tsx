@@ -11,6 +11,7 @@ import {
   SparklesIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { dateToInputString } from '@/lib/dateUtils'
 
 interface ReportGeneratorProps {
   onReportGenerated: (report: any) => void
@@ -89,11 +90,12 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
         fechaInicio.setDate(fechaFin.getDate() - filtroObj.days)
         
         // Actualizar todo en una sola llamada
+        // CORRECCIÓN: Usar dateToInputString en lugar de toISOString() para evitar problemas de timezone
         setFormData(prev => ({
           ...prev,
           filtroFecha: filtro,
-          fechaInicio: fechaInicio.toISOString().split('T')[0],
-          fechaFin: fechaFin.toISOString().split('T')[0]
+          fechaInicio: dateToInputString(fechaInicio),
+          fechaFin: dateToInputString(fechaFin)
         }))
       } else {
         // Solo actualizar el filtro si no hay días definidos

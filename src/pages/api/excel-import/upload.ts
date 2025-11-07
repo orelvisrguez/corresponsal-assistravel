@@ -6,6 +6,25 @@ import XLSX from 'xlsx'
 import fs from 'fs'
 import path from 'path'
 
+/**
+ * Convierte un objeto Date a string YYYY-MM-DD de forma segura
+ * CORRECCIÓN: Reemplaza el patrón problemático toISOString().split('T')[0]
+ * Evita problemas de timezone al procesar fechas de Excel
+ */
+function dateToInputStringSafe(date: Date): string {
+  if (!date || isNaN(date.getTime())) {
+    return ''
+  }
+  
+  // Extraer componentes locales de fecha y formatear
+  // Esto evita los problemas de timezone de toISOString()
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Mes empieza en 0
+  const day = String(date.getDate()).padStart(2, '0')
+  
+  return `${year}-${month}-${day}`
+}
+
 // Configurar Next.js para no parsear el body automáticamente
 export const config = {
   api: {
@@ -162,7 +181,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // Excel almacena fechas como números seriales
           try {
             const date = new Date((value - 25569) * 86400 * 1000)
-            processedRow[key] = date.toISOString().split('T')[0] // YYYY-MM-DD
+            // CORRECCIÓN: Usar dateToInputStringSafe en lugar de toISOString().split('T')[0]
+            // Esto evita problemas de timezone al procesar fechas de Excel
+            processedRow[key] = dateToInputStringSafe(date)
           } catch {
             processedRow[key] = value
           }
