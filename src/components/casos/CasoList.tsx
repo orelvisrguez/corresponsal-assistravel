@@ -14,6 +14,7 @@ import HelpCard from '@/components/ui/HelpCard'
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
 import CasoForm from './CasoForm'
 import CasoHistorial from './CasoHistorial'
+import CasoFinancialStats from './CasoFinancialStats'
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -216,6 +217,9 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
 
       {/* Estadísticas rápidas */}
       <QuickStats casos={filteredCasos} />
+
+      {/* Estadísticas financieras detalladas */}
+      <CasoFinancialStats casos={filteredCasos} />
 
       {filteredCasos.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">
