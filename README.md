@@ -202,4 +202,4 @@ Este proyecto está bajo la licencia MIT.
 
 ---
 
-**Desarrollado por MiniMax Agent** 🤖
+**Desarrollado por Orelvis Rguez** 🤖
