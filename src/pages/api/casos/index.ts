@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { casoSchema } from '@/lib/validations'
 import { registrarCambio } from '@/lib/caso-historial'
 import { AccionHistorial } from '@prisma/client'
-import { createSafeDate } from '@/lib/dateUtils'
+import { createLocalDate } from '@/lib/dateUtils'
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,7 +38,7 @@ export default async function handler(
             corresponsalId: data.corresponsalId,
             nroCasoAssistravel: data.nroCasoAssistravel,
             nroCasoCorresponsal: data.nroCasoCorresponsal || null,
-            fechaInicioCaso: createSafeDate(data.fechaInicioCaso),
+            fechaInicioCaso: createLocalDate(data.fechaInicioCaso),
             pais: data.pais,
             informeMedico: data.informeMedico,
             fee: data.fee || null,
@@ -48,9 +48,9 @@ export default async function handler(
             montoAgregado: data.montoAgregado || null,
             tieneFactura: data.tieneFactura,
             nroFactura: data.nroFactura || null,
-            fechaEmisionFactura: data.fechaEmisionFactura ? createSafeDate(data.fechaEmisionFactura) : null,
-            fechaVencimientoFactura: data.fechaVencimientoFactura ? createSafeDate(data.fechaVencimientoFactura) : null,
-            fechaPagoFactura: data.fechaPagoFactura ? createSafeDate(data.fechaPagoFactura) : null,
+            fechaEmisionFactura: data.fechaEmisionFactura ? createLocalDate(data.fechaEmisionFactura) : null,
+            fechaVencimientoFactura: data.fechaVencimientoFactura ? createLocalDate(data.fechaVencimientoFactura) : null,
+            fechaPagoFactura: data.fechaPagoFactura ? createLocalDate(data.fechaPagoFactura) : null,
             estadoInterno: data.estadoInterno,
             estadoDelCaso: data.estadoDelCaso,
             observaciones: data.observaciones || null
