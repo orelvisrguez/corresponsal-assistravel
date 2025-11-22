@@ -61,62 +61,42 @@ interface KPIData {
 }
 
 interface Props {
-  casos?: CasoConCorresponsal[]
-  autoFetch?: boolean
+  casos: CasoConCorresponsal[]
 }
 
-export default function KPIsAvanzados({ casos: propsCasos, autoFetch = true }: Props) {
-  const [casos, setCasos] = useState<CasoConCorresponsal[]>(propsCasos || [])
-  const [loading, setLoading] = useState(autoFetch && !propsCasos)
+export default function KPIsAvanzados({ casos }: Props) {
+  const [loading, setLoading] = useState(true)
   const [kpiData, setKpiData] = useState<KPIData | null>(null)
   const [selectedTimeRange, setSelectedTimeRange] = useState<'3m' | '6m' | '1y' | 'all'>('6m')
 
   useEffect(() => {
-    if (autoFetch && !propsCasos) {
-      fetchCasos()
-    } else if (propsCasos) {
-      setCasos(propsCasos)
-    }
-  }, [autoFetch, propsCasos])
-
-  useEffect(() => {
-    if (casos.length > 0) {
+    if (casos) {
+      setLoading(true)
       calculateKPIs()
+      setLoading(false)
     }
   }, [casos, selectedTimeRange])
 
-  const fetchCasos = async () => {
-    try {
-      const response = await fetch('/api/casos')
-      const data: CasoConCorresponsal[] = await response.json()
-      setCasos(data)
-    } catch (error) {
-      console.error('Error fetching casos:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const getFilteredCasos = (): CasoConCorresponsal[] => {
-    if (selectedTimeRange === 'all') return casos
+    if (selectedTimeRange === 'all') return casos;
 
-    const now = new Date()
-    const cutoffDate = new Date()
+    const now = new Date();
+    const cutoffDate = new Date();
     
     switch (selectedTimeRange) {
       case '3m':
-        cutoffDate.setMonth(now.getMonth() - 3)
-        break
+        cutoffDate.setMonth(now.getMonth() - 3);
+        break;
       case '6m':
-        cutoffDate.setMonth(now.getMonth() - 6)
-        break
+        cutoffDate.setMonth(now.getMonth() - 6);
+        break;
       case '1y':
-        cutoffDate.setFullYear(now.getFullYear() - 1)
-        break
+        cutoffDate.setFullYear(now.getFullYear() - 1);
+        break;
     }
 
-    return casos.filter(caso => new Date(caso.fechaInicioCaso) >= cutoffDate)
-  }
+    return casos.filter(caso => new Date(caso.fechaInicioCaso) >= cutoffDate);
+  };
 
   const calculateAverageDuration = (cases: CasoConCorresponsal[]): number => {
     const casesWithPayment = cases.filter(caso => 

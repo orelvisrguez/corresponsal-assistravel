@@ -22,7 +22,8 @@ import {
   QuestionMarkCircleIcon,
   ShieldCheckIcon,
   CogIcon,
-  GlobeAltIcon
+  GlobeAltIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, formatCorresponsalNombre, formatPais } from '@/lib/utils'
 import Link from 'next/link'
@@ -186,6 +187,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData()
+
+    // Auto-refresh every 60 seconds
+    const intervalId = setInterval(() => {
+      fetchDashboardData()
+    }, 60000) // 60 seconds in milliseconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId)
   }, [])
 
   // Obtener el rol del usuario actual
@@ -396,11 +405,21 @@ export default function Dashboard() {
         </div>
 
         {/* Filtros Temporales - Actualización Automática */}
-        <FiltrosTemporales
-          periodoSeleccionado={periodoSeleccionado}
-          onCambiarPeriodo={setPeriodoSeleccionado}
-          ultimaActualizacion={ultimaActualizacion}
-        />
+        <div className="flex justify-between items-center">
+          <FiltrosTemporales
+            periodoSeleccionado={periodoSeleccionado}
+            onCambiarPeriodo={setPeriodoSeleccionado}
+            ultimaActualizacion={ultimaActualizacion}
+          />
+          <button
+            onClick={() => fetchDashboardData()}
+            disabled={loading}
+            className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+          >
+            <ArrowPathIcon className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Actualizando...' : 'Actualizar'}
+          </button>
+        </div>
 
         {/* Banner de configuración inicial para usuarios no admin */}
         {session && userRole && userRole !== 'ADMIN' && (
@@ -466,7 +485,7 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold text-gray-900">KPIs Avanzados</h3>
             <ChartBarIcon className="h-5 w-5 text-gray-400" />
           </div>
-          <KPIsAvanzados casos={allCasos} autoFetch={false} />
+          <KPIsAvanzados casos={dashboardData.casosFiltrados} />
         </div>
 
         {/* Estados Internos - Bloques Separados */}
