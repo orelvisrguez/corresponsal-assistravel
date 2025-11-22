@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { 
+import {
   DocumentTextIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -88,7 +88,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
         const fechaFin = new Date()
         const fechaInicio = new Date()
         fechaInicio.setDate(fechaFin.getDate() - filtroObj.days)
-        
+
         // Actualizar todo en una sola llamada
         // CORRECCIÓN: Usar dateToInputString en lugar de toISOString() para evitar problemas de timezone
         setFormData(prev => ({
@@ -103,8 +103,8 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
       }
     } else {
       // Para personalizado, limpiar las fechas
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         filtroFecha: filtro,
         fechaInicio: '',
         fechaFin: ''
@@ -124,7 +124,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
 
     const endpoint = endpoints[tipo as keyof typeof endpoints]
     const params = new URLSearchParams({ fechaInicio, fechaFin })
-    
+
     // Agregar filtros adicionales si existen
     if (formData.filtrosAdicionales.corresponsalId) {
       params.append('corresponsalId', formData.filtrosAdicionales.corresponsalId)
@@ -137,7 +137,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
     if (!response.ok) {
       throw new Error('Error al obtener datos para el informe')
     }
-    
+
     const result = await response.json()
     return result.data
   }
@@ -201,10 +201,10 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
       }
 
       const savedReport = await saveResponse.json()
-      
+
       // Notificar al componente padre
       onReportGenerated(savedReport.data)
-      
+
       // Limpiar formulario
       setFormData({
         titulo: '',
@@ -229,7 +229,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
   const selectedTipo = tiposInforme.find(t => t.id === formData.tipo)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-gray-900">
       {/* Título */}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Generar Nuevo Informe</h2>
@@ -423,7 +423,7 @@ export default function ReportGenerator({ onReportGenerated }: ReportGeneratorPr
             </ul>
           </div>
         )}
-        
+
         <button
           onClick={handleGenerateReport}
           disabled={loading || !formData.titulo || !formData.tipo || !formData.fechaInicio || !formData.fechaFin}

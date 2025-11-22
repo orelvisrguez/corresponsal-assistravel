@@ -6,11 +6,11 @@ interface SimpleSearchProps {
   // Original props (for backward compatibility)
   searchTerm?: string
   onSearchChange?: (term: string) => void
-  
+
   // Standard React props
   value?: string
   onChange?: (value: string) => void
-  
+
   placeholder?: string
   resultCount?: number
 }
@@ -23,11 +23,11 @@ export default function SimpleSearch({
   placeholder = "Buscar...",
   resultCount
 }: SimpleSearchProps) {
-  
+
   // Use the new pattern (value/onChange) if provided, otherwise fall back to old pattern
   const currentValue = value !== undefined ? value : (searchTerm || '')
-  const handleChange = onChange !== undefined ? onChange : (onSearchChange || (() => {}))
-  
+  const handleChange = onChange !== undefined ? onChange : (onSearchChange || (() => { }))
+
   const clearSearch = () => {
     handleChange('')
   }
@@ -56,18 +56,18 @@ export default function SimpleSearch({
           )}
         </div>
       </div>
-      
+
       {/* Información de Resultados */}
       {resultCount !== undefined && (
         <div className="mt-3 pt-3 border-t border-gray-100">
           <p className="text-sm text-gray-600">
-            {resultCount === 1 
-              ? `Se encontró ${resultCount} resultado` 
+            {resultCount === 1
+              ? `Se encontró ${resultCount} resultado`
               : `Se encontraron ${resultCount} resultados`
             }
             {currentValue && (
               <span className="ml-1 font-medium">
-                para "{currentValue}"
+                para &quot;{currentValue}&quot;
               </span>
             )}
           </p>

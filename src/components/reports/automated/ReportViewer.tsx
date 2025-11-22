@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { 
+import {
   ArrowDownTrayIcon,
   ClipboardDocumentIcon,
   ShareIcon,
@@ -44,10 +44,10 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
 
   const handleCopyToClipboard = async () => {
     try {
-      const textToCopy = activeView === 'markdown' 
-        ? report.contenidoMarkdown 
+      const textToCopy = activeView === 'markdown'
+        ? report.contenidoMarkdown
         : report.contenidoTextoPlano
-      
+
       await navigator.clipboard.writeText(textToCopy)
       setCopySuccess(true)
       setTimeout(() => setCopySuccess(false), 2000)
@@ -126,11 +126,11 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
             </body>
           </html>
         `
-        
+
         printWindow.document.write(htmlContent)
         printWindow.document.close()
         printWindow.focus()
-        
+
         // Esperar a que se cargue el contenido y luego mostrar el diálogo de impresión
         setTimeout(() => {
           printWindow.print()
@@ -190,25 +190,25 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
       .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3">$1</h3>')
       .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-gray-900 mt-8 mb-4">$1</h2>')
       .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-900 mt-8 mb-6">$1</h1>')
-      
+
       // Bold and italic
       .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
       .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
-      
+
       // Lists
-      .replace(/^\* (.*$)/gim, '<li class="ml-4">• $1</li>')
-      .replace(/^- (.*$)/gim, '<li class="ml-4">• $1</li>')
-      
+      .replace(/^\* (.*$)/gim, '<li class="ml-4 text-gray-700">• $1</li>')
+      .replace(/^- (.*$)/gim, '<li class="ml-4 text-gray-700">• $1</li>')
+
       // Line breaks
       .replace(/\n\n/g, '</p><p class="mb-4">')
       .replace(/\n/g, '<br>')
-      
+
       // Wrap in paragraphs
       .replace(/^(?!<[h|l])(.+)$/gim, '<p class="mb-4 text-gray-700 leading-relaxed">$1</p>')
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-gray-900">
       {/* Header del informe */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-start justify-between">
@@ -216,25 +216,25 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               {report.titulo}
             </h1>
-            
+
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
               <div className="flex items-center space-x-1">
                 <TagIcon className="h-4 w-4" />
                 <span>{getTipoLabel(report.tipo)}</span>
               </div>
-              
+
               <div className="flex items-center space-x-1">
                 <CalendarIcon className="h-4 w-4" />
                 <span>
                   {new Date(report.fechaInicio).toLocaleDateString('es-ES')} - {new Date(report.fechaFin).toLocaleDateString('es-ES')}
                 </span>
               </div>
-              
+
               <div className="flex items-center space-x-1">
                 <UserIcon className="h-4 w-4" />
                 <span>{report.usuario?.name || 'Usuario'}</span>
               </div>
-              
+
               <div className="flex items-center space-x-1">
                 <DocumentTextIcon className="h-4 w-4" />
                 <span>Generado el {new Date(report.fechaGeneracion).toLocaleDateString('es-ES')}</span>
@@ -260,7 +260,7 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
                 </>
               )}
             </button>
-            
+
             <button
               onClick={handlePrint}
               className="flex items-center space-x-2 px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
@@ -268,7 +268,7 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
               <PrinterIcon className="h-4 w-4" />
               <span>Imprimir</span>
             </button>
-            
+
             <button
               onClick={handleDownloadPDF}
               className="flex items-center space-x-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -287,21 +287,19 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
             <div className="flex space-x-4">
               <button
                 onClick={() => setActiveView('markdown')}
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  activeView === 'markdown'
+                className={`px-3 py-2 text-sm font-medium rounded-md ${activeView === 'markdown'
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Vista Formateada
               </button>
               <button
                 onClick={() => setActiveView('plain')}
-                className={`px-3 py-2 text-sm font-medium rounded-md ${
-                  activeView === 'plain'
+                className={`px-3 py-2 text-sm font-medium rounded-md ${activeView === 'plain'
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Texto Plano
               </button>
@@ -312,8 +310,8 @@ export default function ReportViewer({ report, onNewReport }: ReportViewerProps)
         {/* Contenido del informe */}
         <div className="p-6">
           {activeView === 'markdown' ? (
-            <div 
-              className="prose max-w-none"
+            <div
+              className="prose max-w-none text-gray-900"
               dangerouslySetInnerHTML={{
                 __html: formatMarkdownToHTML(report.contenidoMarkdown)
               }}

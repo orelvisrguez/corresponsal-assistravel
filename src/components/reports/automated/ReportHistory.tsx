@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
+import {
   DocumentTextIcon,
   EyeIcon,
   TrashIcon,
@@ -51,7 +51,7 @@ export default function ReportHistory({ onViewReport, onNewReport }: ReportHisto
       }
 
       const response = await fetch(`/api/reports/automated?${params.toString()}`)
-      
+
       if (!response.ok) {
         throw new Error('Error al cargar el historial de informes')
       }
@@ -139,7 +139,7 @@ export default function ReportHistory({ onViewReport, onNewReport }: ReportHisto
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-gray-900">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -222,7 +222,7 @@ export default function ReportHistory({ onViewReport, onNewReport }: ReportHisto
                       {getTipoLabel(report.tipo)}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <div className="flex items-center space-x-1">
                       <CalendarIcon className="h-4 w-4" />

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
+import {
   UserGroupIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
@@ -29,15 +29,15 @@ export default function ReporteCorresponsales({ initialData }: ReporteCorrespons
   const fetchData = async () => {
     setLoading(true)
     setError(null)
-    
+
     try {
       const params = new URLSearchParams()
       if (filters.fechaInicio) params.append('fechaInicio', filters.fechaInicio)
       if (filters.fechaFin) params.append('fechaFin', filters.fechaFin)
-      
+
       const response = await fetch(`/api/reports/corresponsales?${params.toString()}`)
       if (!response.ok) throw new Error('Error al cargar datos')
-      
+
       const result = await response.json()
       setData(result.data)
     } catch (err) {
@@ -58,8 +58,8 @@ export default function ReporteCorresponsales({ initialData }: ReporteCorrespons
   }
 
   const formatCurrency = (amount: number, currency: 'USD' | 'PESOS' = 'USD') => {
-    return currency === 'USD' 
-      ? `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` 
+    return currency === 'USD'
+      ? `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
       : `$${amount.toLocaleString('es-AR')} ARS`
   }
 
@@ -95,7 +95,7 @@ export default function ReporteCorresponsales({ initialData }: ReporteCorrespons
         <UserGroupIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Error al cargar reporte</h2>
         <p className="text-gray-600 mb-4">{error}</p>
-        <button 
+        <button
           onClick={fetchData}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         >
@@ -108,7 +108,7 @@ export default function ReporteCorresponsales({ initialData }: ReporteCorrespons
   if (!data) return null
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-gray-900">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Reporte de Corresponsales</h1>
@@ -348,7 +348,7 @@ export default function ReporteCorresponsales({ initialData }: ReporteCorrespons
             </div>
           ))}
         </div>
-        
+
         {(data?.reporte || []).length === 0 && (
           <div className="text-center py-12 text-gray-500">
             <UserGroupIcon className="h-16 w-16 mx-auto mb-4 opacity-50" />

@@ -12,6 +12,7 @@ import SearchAndFilters, { FilterOptions } from '@/components/ui/SearchAndFilter
 import QuickStats from '@/components/ui/QuickStats'
 import HelpCard from '@/components/ui/HelpCard'
 import DeleteConfirmModal from '@/components/ui/DeleteConfirmModal'
+import ExportOptions from '@/components/ui/ExportOptions'
 import CasoForm from './CasoForm'
 import CasoHistorial from './CasoHistorial'
 import CasoFinancialStats from './CasoFinancialStats'
@@ -220,6 +221,9 @@ export default function CasoList({ casos, corresponsales, onRefresh, initialEdit
 
       {/* Estadísticas financieras detalladas */}
       <CasoFinancialStats casos={filteredCasos} />
+
+      {/* Opciones de exportación */}
+      <ExportOptions casos={casos} filteredCasos={filteredCasos} />
 
       {filteredCasos.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow">

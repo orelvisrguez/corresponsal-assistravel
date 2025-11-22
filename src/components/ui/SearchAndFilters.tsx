@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
   XMarkIcon,
   CalendarIcon,
   CurrencyDollarIcon,
@@ -84,7 +84,7 @@ export default function SearchAndFilters({
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
-      
+
       {/* Búsqueda Principal */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 relative">
@@ -99,15 +99,14 @@ export default function SearchAndFilters({
             className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-900 placeholder-gray-500"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className={`inline-flex items-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium transition-colors ${
-              showAdvancedFilters 
-                ? 'bg-blue-50 text-blue-700 border-blue-300' 
+            className={`inline-flex items-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium transition-colors ${showAdvancedFilters
+                ? 'bg-blue-50 text-blue-700 border-blue-300'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
+              }`}
           >
             <FunnelIcon className="h-4 w-4 mr-2" />
             Filtros
@@ -117,7 +116,7 @@ export default function SearchAndFilters({
               </span>
             )}
           </button>
-          
+
           {hasActiveFilters() && (
             <button
               onClick={onClearFilters}
@@ -134,13 +133,13 @@ export default function SearchAndFilters({
       {resultCount !== undefined && (
         <div className="flex items-center justify-between py-2 border-t border-gray-100">
           <p className="text-sm text-gray-600">
-            {resultCount === 1 
-              ? `Se encontró ${resultCount} caso` 
+            {resultCount === 1
+              ? `Se encontró ${resultCount} caso`
               : `Se encontraron ${resultCount} casos`
             }
             {filters.searchTerm && (
               <span className="ml-1 font-medium">
-                para "{filters.searchTerm}"
+                para &quot;{filters.searchTerm}&quot;
               </span>
             )}
           </p>
@@ -160,10 +159,10 @@ export default function SearchAndFilters({
             <AdjustmentsHorizontalIcon className="h-4 w-4 mr-2" />
             Filtros Avanzados
           </h4>
-          
+
           {/* Primera fila de filtros */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
+
             {/* Corresponsal */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -224,7 +223,7 @@ export default function SearchAndFilters({
 
           {/* Segunda fila de filtros */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            
+
             {/* País */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -278,14 +277,14 @@ export default function SearchAndFilters({
 
           {/* Tercera fila - Filtros de fecha y costo */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
+
             {/* Rango de fechas */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <CalendarIcon className="h-4 w-4 inline mr-1" />
                 Filtro por Fechas
               </label>
-              
+
               {/* Selector de tipo de fecha */}
               <div className="mb-3">
                 <select
@@ -300,7 +299,7 @@ export default function SearchAndFilters({
                 </select>
                 <p className="text-xs text-gray-500 mt-1">Selecciona el tipo de fecha a filtrar</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <input

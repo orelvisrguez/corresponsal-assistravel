@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { 
-  ExclamationTriangleIcon, 
+import {
+  ExclamationTriangleIcon,
   ShieldExclamationIcon,
   XMarkIcon,
   TrashIcon
@@ -32,16 +32,16 @@ export default function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   const [confirmText, setConfirmText] = useState('')
   const [hasReadWarning, setHasReadWarning] = useState(false)
-  
+
   const isConfirmValid = confirmText.toLowerCase() === 'tengo' && hasReadWarning
-  
+
   const defaultConsequences = [
     'Se eliminará permanentemente de la base de datos',
     'No se puede deshacer esta acción',
     'Se perderán todos los datos asociados',
     'Los reportes históricos se verán afectados'
   ]
-  
+
   const allConsequences = consequences.length > 0 ? consequences : defaultConsequences
 
   const handleConfirm = () => {
@@ -62,7 +62,7 @@ export default function DeleteConfirmModal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Backdrop */}
-        <div 
+        <div
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={handleClose}
         />
@@ -87,7 +87,7 @@ export default function DeleteConfirmModal({
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-2">
               {title}
             </h3>
-            
+
             {/* Item info */}
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
               <p className="text-sm text-gray-600">
@@ -106,7 +106,7 @@ export default function DeleteConfirmModal({
                   ⚠️ Consecuencias de esta acción:
                 </h4>
               </div>
-              
+
               <ul className="space-y-2">
                 {allConsequences.map((consequence, index) => (
                   <li key={index} className="flex items-start text-sm text-red-700">
@@ -115,7 +115,7 @@ export default function DeleteConfirmModal({
                   </li>
                 ))}
               </ul>
-              
+
               {/* Confirmation checkbox */}
               <div className="mt-4 pt-3 border-t border-red-200">
                 <label className="flex items-start space-x-2 cursor-pointer">
@@ -144,17 +144,16 @@ export default function DeleteConfirmModal({
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder="Escribe 'tengo' para confirmar"
                 disabled={!hasReadWarning || loading}
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors text-gray-900 placeholder-gray-500 ${
-                  !hasReadWarning 
-                    ? 'bg-gray-100 border-gray-300 text-gray-500' 
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors text-gray-900 placeholder-gray-500 ${!hasReadWarning
+                    ? 'bg-gray-100 border-gray-300 text-gray-500'
                     : confirmText.toLowerCase() === 'tengo'
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50'
                       : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                }`}
+                  }`}
               />
               {confirmText && confirmText.toLowerCase() !== 'tengo' && (
                 <p className="mt-1 text-xs text-red-600">
-                  Debe escribir exactamente "tengo" para continuar
+                  Debe escribir exactamente &quot;tengo&quot; para continuar
                 </p>
               )}
             </div>

@@ -106,7 +106,7 @@ export default function AutoCompleteInput({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <div className="relative">
         <input
           ref={inputRef}
@@ -120,21 +120,21 @@ export default function AutoCompleteInput({
           className={`
             block w-full px-3 py-2 border rounded-md shadow-sm text-sm
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-            ${error 
-              ? 'border-red-300 text-red-900 placeholder-red-300' 
+            ${error
+              ? 'border-red-300 text-red-900 placeholder-red-300'
               : 'border-gray-300 text-gray-900 placeholder-gray-400'
             }
             ${className}
           `}
         />
-        
+
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 hover:text-gray-600"
         >
-          <ChevronDownIcon 
-            className={`w-4 h-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`} 
+          <ChevronDownIcon
+            className={`w-4 h-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
           />
         </button>
       </div>
@@ -153,8 +153,8 @@ export default function AutoCompleteInput({
                   onClick={() => handleOptionSelect(option)}
                   className={`
                     w-full px-3 py-2 text-left text-sm hover:bg-blue-50 hover:text-blue-600
-                    ${inputValue === option 
-                      ? 'bg-blue-50 text-blue-600' 
+                    ${inputValue === option
+                      ? 'bg-blue-50 text-blue-600'
                       : 'text-gray-900'
                     }
                   `}
@@ -162,21 +162,21 @@ export default function AutoCompleteInput({
                   {option}
                 </button>
               ))}
-              
+
               {/* Opción para agregar el valor actual si no existe */}
-              {inputValue.trim() && !options.some(option => 
+              {inputValue.trim() && !options.some(option =>
                 option.toLowerCase() === inputValue.toLowerCase()
               ) && (
-                <div className="border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => handleOptionSelect(inputValue.trim())}
-                    className="w-full px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 font-medium"
-                  >
-                    ➕ Agregar "{inputValue.trim()}"
-                  </button>
-                </div>
-              )}
+                  <div className="border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => handleOptionSelect(inputValue.trim())}
+                      className="w-full px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 font-medium"
+                    >
+                      ➕ Agregar &quot;{inputValue.trim()}&quot;
+                    </button>
+                  </div>
+                )}
             </>
           ) : inputValue.trim() ? (
             <div className="px-3 py-2 text-sm text-gray-500">
@@ -185,7 +185,7 @@ export default function AutoCompleteInput({
                 onClick={() => handleOptionSelect(inputValue.trim())}
                 className="w-full text-left text-blue-600 hover:bg-blue-50 p-2 rounded font-medium"
               >
-                ➕ Agregar "{inputValue.trim()}"
+                ➕ Agregar &quot;{inputValue.trim()}&quot;
               </button>
             </div>
           ) : (
