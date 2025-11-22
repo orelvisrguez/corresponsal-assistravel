@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { 
-  Bars3Icon, 
+import { useRouter, usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import {
+  Bars3Icon,
   XMarkIcon,
   HomeIcon,
   UserGroupIcon,
@@ -16,6 +17,7 @@ import {
   ArrowUpTrayIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
+import Button from '@/components/ui/Button'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -32,6 +34,7 @@ export default function Navbar() {
   const [userRole, setUserRole] = useState<string | null>(null)
   const { data: session } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
 
   // Obtener el rol del usuario actual
   useEffect(() => {
@@ -73,24 +76,30 @@ export default function Navbar() {
   })
 
   return (
-    <nav className="bg-white shadow-md border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex h-16 justify-between">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/dashboard" className="flex flex-col">
-                <span className="text-xl font-bold text-blue-600 leading-tight">ASSISTRAVEL</span>
-                <span className="text-xs text-gray-500 leading-tight">Corresponsalia</span>
+                <span className="text-xl font-bold text-primary leading-tight">ASSISTRAVEL</span>
+                <span className="text-xs text-muted-foreground leading-tight">Corresponsalia</span>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {filteredNavigation.map((item) => {
                 const Icon = item.icon
+                const isActive = pathname === item.href
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent transition-colors"
+                    className={cn(
+                      "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition-colors",
+                      isActive
+                        ? "border-primary text-foreground"
+                        : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                    )}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {item.name}
@@ -99,48 +108,59 @@ export default function Navbar() {
               })}
             </div>
           </div>
-          
+
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-muted-foreground">
                 Hola, {session?.user?.name || session?.user?.email}
               </span>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleSignOut}
-                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
                 Salir
-              </button>
+              </Button>
             </div>
           </div>
-          
+
           <div className="-mr-2 flex items-center sm:hidden">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              className="text-muted-foreground"
             >
+              <span className="sr-only">Open main menu</span>
               {mobileMenuOpen ? (
                 <XMarkIcon className="block h-6 w-6" />
               ) : (
                 <Bars3Icon className="block h-6 w-6" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="sm:hidden">
-          <div className="pt-2 pb-3 space-y-1">
+        <div className="sm:hidden border-t">
+          <div className="space-y-1 pt-2 pb-3">
             {filteredNavigation.map((item) => {
               const Icon = item.icon
+              const isActive = pathname === item.href
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  className={cn(
+                    "flex items-center border-l-4 py-2 pl-3 pr-4 text-base font-medium transition-colors",
+                    isActive
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground"
+                  )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Icon className="w-5 h-5 mr-3" />
@@ -149,22 +169,23 @@ export default function Navbar() {
               )
             })}
           </div>
-          <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="border-t border-border pt-4 pb-3">
             <div className="flex items-center px-4">
               <div>
-                <div className="text-base font-medium text-gray-800">
+                <div className="text-base font-medium text-foreground">
                   {session?.user?.name || session?.user?.email}
                 </div>
               </div>
             </div>
-            <div className="mt-3">
-              <button
+            <div className="mt-3 px-2 space-y-1">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-muted-foreground hover:text-foreground"
                 onClick={handleSignOut}
-                className="flex items-center w-full pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               >
                 <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
                 Salir
-              </button>
+              </Button>
             </div>
           </div>
         </div>

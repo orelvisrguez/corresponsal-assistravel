@@ -15,13 +15,13 @@ function dateToInputStringSafe(date: Date): string {
   if (!date || isNaN(date.getTime())) {
     return ''
   }
-  
-  // Extraer componentes locales de fecha y formatear
-  // Esto evita los problemas de timezone de toISOString()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0') // Mes empieza en 0
-  const day = String(date.getDate()).padStart(2, '0')
-  
+
+  // Extraer componentes UTC de fecha y formatear
+  // Esto evita los problemas de timezone de toISOString() y asegura consistencia
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0') // Mes empieza en 0
+  const day = String(date.getUTCDate()).padStart(2, '0')
+
   return `${year}-${month}-${day}`
 }
 
@@ -34,23 +34,24 @@ export const config = {
 
 interface ExcelRow {
   id?: number
-  corresponsal_id: string
-  nro_caso_assistravel: string
-  nro_caso_corresponsal?: string | null
-  fecha_de_inicio: string
+  nombreCorresponsal: string
+  nroCasoAssistravel: string
+  nroCasoCorresponsal?: string | null
+  fechaInicio: string
   pais: string
-  informe_medico?: string
   fee?: string | number | null
-  costo_usd?: string | number
-  costo_moneda_local?: string | number
-  simbolo_moneda?: string | null
-  monto_agregado?: number | null
-  tiene_factura?: string
-  nro_factura?: string | null
-  fecha_vencimiento_factura?: string | null
-  fecha_pago_factura?: string | null
-  estado_interno?: string | null
-  estado_del_caso?: string | null
+  costoUsd?: string | number
+  costoMonedaLocal?: string | number
+  simboloMoneda?: string | null
+  montoAgregado?: number | null
+  informeMedico?: string
+  tieneFactura?: string
+  estadoInterno?: string | null
+  estadoDelCaso?: string | null
+  factFechaEmision?: string | null
+  factFechaVencimiento?: string | null
+  factFechaPago?: string | null
+  nroFactura?: string | null
   observaciones?: string | null
 }
 
@@ -82,12 +83,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           'application/vnd.ms-excel',
           'text/csv'
         ]
-        
+
         const validExtensions = ['.xlsx', '.xls', '.csv']
-        const hasValidExtension = validExtensions.some(ext => 
+        const hasValidExtension = validExtensions.some(ext =>
           originalFilename?.toLowerCase().endsWith(ext)
         )
-        
+
         return validTypes.includes(mimetype || '') || hasValidExtension
       }
     })
@@ -120,7 +121,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
     // Leer y procesar el archivo Excel
-    let jsonData: ExcelRow[]
+    let jsonData: any[]
 
     try {
       if (file.originalFilename?.toLowerCase().endsWith('.csv')) {
@@ -129,17 +130,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const workbook = XLSX.read(csvContent, { type: 'string' })
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
-        jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet)
+        jsonData = XLSX.utils.sheet_to_json(worksheet)
       } else {
         // Procesar archivo Excel
         const workbook = XLSX.readFile(file.filepath)
         const sheetName = workbook.SheetNames[0]
         const worksheet = workbook.Sheets[sheetName]
-        jsonData = XLSX.utils.sheet_to_json<ExcelRow>(worksheet)
+        jsonData = XLSX.utils.sheet_to_json(worksheet)
       }
     } catch (error) {
       console.error('Error al leer archivo Excel:', error)
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Error al procesar el archivo. Verifica que sea un archivo Excel válido.',
         error: error instanceof Error ? error.message : 'Error desconocido'
       })
@@ -147,16 +148,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Validar que hay datos
     if (!jsonData || jsonData.length === 0) {
-      return res.status(400).json({ 
-        message: 'El archivo está vacío o no contiene datos válidos' 
+      return res.status(400).json({
+        message: 'El archivo está vacío o no contiene datos válidos'
       })
     }
 
-    // Validar columnas obligatorias
+    // Validar columnas obligatorias (usando los nuevos nombres)
     const requiredColumns = [
-      'corresponsal_id',
-      'nro_caso_assistravel',
-      'fecha_de_inicio',
+      'nombreCorresponsal',
+      'nroCasoAssistravel',
+      'fechaInicio',
       'pais'
     ]
 
@@ -175,14 +176,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const processedData = jsonData.map((row, index) => {
       const processedRow: any = {}
 
-      for (const [key, value] of Object.entries(row)) {
-        // Procesar fechas
-        if (key.includes('fecha') && value && typeof value === 'number') {
+      // Lista de columnas esperadas para filtrar y mapear
+      const expectedColumns = [
+        'id', 'nombreCorresponsal', 'nroCasoAssistravel', 'nroCasoCorresponsal',
+        'fechaInicio', 'pais', 'fee', 'costoUsd', 'costoMonedaLocal',
+        'simboloMoneda', 'montoAgregado', 'informeMedico', 'tieneFactura',
+        'estadoInterno', 'estadoDelCaso', 'factFechaEmision',
+        'factFechaVencimiento', 'factFechaPago', 'nroFactura', 'observaciones'
+      ]
+
+      for (const key of expectedColumns) {
+        const value = row[key]
+
+        // Procesar fechas (campos que contienen 'Fecha' o 'fecha')
+        if ((key.includes('Fecha') || key.includes('fecha')) && value && typeof value === 'number') {
           // Excel almacena fechas como números seriales
           try {
             const date = new Date((value - 25569) * 86400 * 1000)
-            // CORRECCIÓN: Usar dateToInputStringSafe en lugar de toISOString().split('T')[0]
-            // Esto evita problemas de timezone al procesar fechas de Excel
             processedRow[key] = dateToInputStringSafe(date)
           } catch {
             processedRow[key] = value
@@ -195,10 +205,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       // Validar campos obligatorios en cada fila
-      const missingInRow = requiredColumns.filter(col => 
+      const missingInRow = requiredColumns.filter(col =>
         !processedRow[col] || processedRow[col] === null || processedRow[col] === ''
       )
-      
+
       if (missingInRow.length > 0) {
         console.warn(`Fila ${index + 2}: Faltan campos obligatorios: ${missingInRow.join(', ')}`)
       }
@@ -227,7 +237,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('Error en upload de Excel:', error)
-    
+
     return res.status(500).json({
       success: false,
       message: 'Error interno del servidor',

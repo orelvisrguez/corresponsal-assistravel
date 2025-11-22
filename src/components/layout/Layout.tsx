@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, ReactNode } from 'react'
 import Navbar from './Navbar'
+import Footer from './Footer'
 import { Toaster } from 'react-hot-toast'
 
 interface LayoutProps {
@@ -23,8 +24,8 @@ export default function Layout({ children, requireAuth = true }: LayoutProps) {
 
   if (requireAuth && status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -34,11 +35,12 @@ export default function Layout({ children, requireAuth = true }: LayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-muted/20">
       {session && <Navbar />}
-      <main className={session ? 'max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pt-20' : ''}>
+      <main className={session ? 'flex-1 max-w-7xl w-full mx-auto py-6 px-4 sm:px-6 lg:px-8' : 'flex-1'}>
         {children}
       </main>
+      {session && <Footer />}
       <Toaster position="top-right" />
     </div>
   )

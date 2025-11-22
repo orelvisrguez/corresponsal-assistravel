@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import Head from 'next/head'
 import Layout from '@/components/layout/Layout'
@@ -32,12 +32,6 @@ import {
 import { formatCurrency, getEstadoInternoLabel, getEstadoCasoLabel, formatCorresponsalNombre, formatPais } from '@/lib/utils'
 import Link from 'next/link'
 import {
-  filtrarCasosPorPeriodo,
-  calcularKPIsFinancieros,
-  obtenerTopCorresponsales,
-  calcularTendencias,
-  calcularFiltroFechas,
-  FiltroFechas,
   FiltroPeriodo
 } from '@/lib/dashboardUtils'
 import { useDashboardData } from '@/hooks/useDashboardData'
@@ -84,12 +78,11 @@ export default function DashboardModerno() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
   const {
-    casos: allCasos,
-    corresponsales: allCorresponsales,
+    stats,
     isLoading: loading,
     mutate,
     isValidating
-  } = useDashboardData(autoRefresh, 5000) // 5 segundos para "tiempo real"
+  } = useDashboardData(periodoSeleccionado, autoRefresh, 5000)
 
   useEffect(() => {
     if (!isValidating) {
@@ -119,76 +112,30 @@ export default function DashboardModerno() {
     await mutate()
   }
 
-  // Calcular estadísticas del dashboard
-  const getCasosFiltrados = () => {
-    return filtrarCasosPorPeriodo(allCasos, periodoSeleccionado)
-  }
+  // Extraer datos de stats o usar valores por defecto
+  const {
+    totalCasos = 0,
+    totalCorresponsales = 0,
+    casosAbiertos = 0,
+    casosCerrados = 0,
+    casosPausados = 0,
+    casosCancelados = 0,
+    totalIngresosUSD = 0,
+    casosConFactura = 0,
+    casosCobrados = 0,
+    casosParaRefacturar = 0,
+    casosSinFee = 0,
+    casosEnProgreso = 0,
+    ingresosPendientes = 0,
+    topCorresponsales = [],
+    topMonedas = [],
+    casosRecientes = []
+  } = stats || {}
 
-  const casosFiltrados = getCasosFiltrados()
-  const totalCorresponsales = new Set(casosFiltrados.map(c => c.corresponsal.id)).size
-  const totalCasos = casosFiltrados.length
-
-  // Estadísticas de estados
-  const casosAbiertos = casosFiltrados.filter(c => c.estadoInterno === 'ABIERTO').length
-  const casosCerrados = casosFiltrados.filter(c => c.estadoInterno === 'CERRADO').length
-  const casosPausados = casosFiltrados.filter(c => c.estadoInterno === 'PAUSADO').length
-  const casosCancelados = casosFiltrados.filter(c => c.estadoInterno === 'CANCELADO').length
-
-  // Estadísticas financieras
-  const totalIngresosUSD = casosFiltrados.reduce((sum, caso) => sum + parseFormattedNumber(caso.costoUsd), 0)
-  const casosConFactura = casosFiltrados.filter(c => c.tieneFactura).length
-  const casosCobrados = casosFiltrados.filter(c => c.estadoDelCaso === 'COBRADO').length
-  const casosParaRefacturar = casosFiltrados.filter(c => c.estadoDelCaso === 'PARA_REFACTURAR').length
-  const casosSinFee = casosFiltrados.filter(c => c.estadoDelCaso === 'NO_FEE').length
-
-  // Cálculos de eficiencia
+  // Cálculos derivados (ratios)
   const tasaFacturacion = totalCasos > 0 ? (casosConFactura / totalCasos) * 100 : 0
   const tasaCobro = casosConFactura > 0 ? (casosCobrados / casosConFactura) * 100 : 0
   const promedioPorCaso = totalCasos > 0 ? totalIngresosUSD / totalCasos : 0
-  const ingresosPendientes = casosFiltrados
-    .filter(c => c.tieneFactura && c.estadoDelCaso !== 'COBRADO')
-    .reduce((sum, caso) => sum + parseFormattedNumber(caso.costoUsd), 0)
-
-  // Top corresponsales
-  const corresponsalMap = new Map<string, { casos: CasoConCorresponsal[], ingresos: number }>()
-  casosFiltrados.forEach(caso => {
-    const nombre = caso.corresponsal.nombreCorresponsal
-    if (!corresponsalMap.has(nombre)) {
-      corresponsalMap.set(nombre, { casos: [], ingresos: 0 })
-    }
-    corresponsalMap.get(nombre)!.casos.push(caso)
-    corresponsalMap.get(nombre)!.ingresos += parseFormattedNumber(caso.costoUsd)
-  })
-
-  const topCorresponsales = Array.from(corresponsalMap.entries())
-    .sort(([, a], [, b]) => b.ingresos - a.ingresos)
-    .slice(0, 3)
-
-  // Distribución por moneda
-  const currencyMap = new Map<string, { total: number; count: number }>()
-  casosFiltrados.forEach(caso => {
-    if (caso.simboloMoneda && caso.costoMonedaLocal) {
-      const amount = parseFormattedNumber(caso.costoMonedaLocal)
-      const currency = caso.simboloMoneda.trim()
-      if (amount > 0 && currency) {
-        if (!currencyMap.has(currency)) {
-          currencyMap.set(currency, { total: 0, count: 0 })
-        }
-        const existing = currencyMap.get(currency)!
-        existing.total += amount
-        existing.count += 1
-      }
-    }
-  })
-
-  const topMonedas = Array.from(currencyMap.entries())
-    .sort(([, a], [, b]) => b.total - a.total)
-    .slice(0, 4)
-
-  // Casos recientes para mostrar
-  const casosRecientes = casosFiltrados
-    .sort((a, b) => new Date(b.fechaInicioCaso!).getTime() - new Date(a.fechaInicioCaso!).getTime())
-    .slice(0, 5)
 
   if (loading) {
     return (
@@ -277,7 +224,7 @@ export default function DashboardModerno() {
                     })}
                   </p>
                   <p className="text-xs text-blue-200 mt-1">
-                    {casosFiltrados.length} casos activos • {totalCorresponsales} corresponsales
+                    {totalCasos} casos activos • {totalCorresponsales} corresponsales
                   </p>
                 </div>
               </div>
@@ -337,7 +284,7 @@ export default function DashboardModerno() {
                 <div className="flex items-center space-x-2">
                   <ArrowTrendingUpIcon className="w-4 h-4 text-emerald-500" />
                   <span className="text-sm text-emerald-600 font-medium">
-                    {casosFiltrados.length} casos procesados
+                    {totalCasos} casos procesados
                   </span>
                 </div>
               </div>
@@ -349,7 +296,7 @@ export default function DashboardModerno() {
                     <DocumentTextIcon className="w-6 h-6 text-white" />
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">{casosFiltrados.length}</p>
+                    <p className="text-2xl font-bold text-gray-900">{totalCasos}</p>
                     <p className="text-sm text-gray-500">Casos Totales</p>
                   </div>
                 </div>
@@ -455,7 +402,7 @@ export default function DashboardModerno() {
                   {[
                     { label: 'Sin Fee', count: casosSinFee, color: 'gray', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
                     { label: 'Para Refacturar', count: casosParaRefacturar, color: 'orange', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
-                    { label: 'En Progreso', count: casosFiltrados.filter(c => c.estadoDelCaso === 'ON_GOING').length, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+                    { label: 'En Progreso', count: casosEnProgreso, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
                     { label: 'Cobrados', count: casosCobrados, color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' }
                   ].map((estado) => (
                     <div key={estado.label} className={`flex items-center justify-between p-4 rounded-xl ${estado.bg} border ${estado.border} hover:shadow-md transition-all`}>
@@ -519,7 +466,8 @@ export default function DashboardModerno() {
                   <div className="mt-8 pt-6 border-t border-gray-200">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Monedas Locales</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {topMonedas.map(([moneda, datos], index) => {
+                      {topMonedas.map((item: any, index: number) => {
+                        const { moneda, total, count } = item
                         const colors = ['emerald', 'blue', 'purple', 'amber']
                         const color = colors[index % colors.length]
                         return (
@@ -528,10 +476,10 @@ export default function DashboardModerno() {
                               <div className={`w-6 h-6 bg-${color}-500 rounded-full flex items-center justify-center`}>
                                 <span className="text-xs font-bold text-white">{moneda.charAt(0)}</span>
                               </div>
-                              <span className="text-xs text-gray-500">{datos.count} casos</span>
+                              <span className="text-xs text-gray-500">{count} casos</span>
                             </div>
                             <p className={`text-lg font-bold text-${color}-900`}>
-                              {datos.total.toFixed(2)} {moneda}
+                              {parseFormattedNumber(total).toFixed(2)} {moneda}
                             </p>
                             <p className="text-xs text-gray-600">Total {moneda}</p>
                           </div>
@@ -561,7 +509,8 @@ export default function DashboardModerno() {
                 <div className="p-6">
                   {topCorresponsales.length > 0 ? (
                     <div className="space-y-4">
-                      {topCorresponsales.map(([nombre, datos], index) => {
+                      {topCorresponsales.map((item: any, index: number) => {
+                        const { nombre, ingresos, casos } = item
                         const positions = ['🥇', '🥈', '🥉']
                         const colors = ['from-yellow-400 to-yellow-600', 'from-gray-400 to-gray-600', 'from-amber-400 to-amber-600']
                         return (
@@ -571,11 +520,11 @@ export default function DashboardModerno() {
                                 <span className="text-2xl">{positions[index]}</span>
                                 <div>
                                   <p className="font-bold">{nombre}</p>
-                                  <p className="text-xs opacity-75">{datos.casos.length} casos</p>
+                                  <p className="text-xs opacity-75">{casos} casos</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className="text-lg font-bold">{formatCurrency(datos.ingresos)}</p>
+                                <p className="text-lg font-bold">{formatCurrency(ingresos)}</p>
                                 <p className="text-xs opacity-75">ingresos USD</p>
                               </div>
                             </div>
@@ -608,7 +557,7 @@ export default function DashboardModerno() {
                 <div className="p-6">
                   {casosRecientes.length > 0 ? (
                     <div className="space-y-3">
-                      {casosRecientes.map((caso) => (
+                      {casosRecientes.map((caso: any) => (
                         <div key={caso.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                           <div className="flex-1">
                             <p className="font-semibold text-gray-900 text-sm">{caso.nroCasoAssistravel}</p>

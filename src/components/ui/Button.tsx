@@ -2,33 +2,54 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'primary' | 'danger' // Added legacy support
+  size?: 'default' | 'sm' | 'lg' | 'icon' | 'md' // Added legacy support
   loading?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', loading, children, disabled, ...props }, ref) => {
-    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
-    
-    const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+  ({ className, variant = 'default', size = 'default', loading, children, disabled, ...props }, ref) => {
+
+    // Map legacy variants to new ones
+    const mapVariant = (v: string) => {
+      if (v === 'primary') return 'default'
+      if (v === 'danger') return 'destructive'
+      return v
     }
-    
+
+    // Map legacy sizes
+    const mapSize = (s: string) => {
+      if (s === 'md') return 'default'
+      return s
+    }
+
+    const effectiveVariant = mapVariant(variant)
+    const effectiveSize = mapSize(size)
+
+    const baseClasses = 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+
+    const variants = {
+      default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+      destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+      outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+      secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+      ghost: 'hover:bg-accent hover:text-accent-foreground',
+      link: 'text-primary underline-offset-4 hover:underline',
+    }
+
     const sizes = {
-      sm: 'px-3 py-2 text-sm',
-      md: 'px-4 py-2 text-sm',
-      lg: 'px-6 py-3 text-base'
+      default: 'h-10 px-4 py-2',
+      sm: 'h-9 rounded-md px-3',
+      lg: 'h-11 rounded-md px-8',
+      icon: 'h-10 w-10',
     }
 
     return (
       <button
         className={cn(
           baseClasses,
-          variants[variant],
-          sizes[size],
+          variants[effectiveVariant as keyof typeof variants],
+          sizes[effectiveSize as keyof typeof sizes],
           className
         )}
         disabled={disabled || loading}
