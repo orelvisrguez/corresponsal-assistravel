@@ -143,22 +143,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           observaciones: row.observaciones || null
         }
 
-        // Verificar si el caso ya existe
-        const casoExistente = await prisma.caso.findFirst({
-          where: {
-            nroCasoAssistravel: casoData.nroCasoAssistravel
-          }
-        })
-
-        if (casoExistente) {
-          logs.push(`Caso ya existe: ${casoData.nroCasoAssistravel} - Saltando`)
-          continue
+        // Buscar caso existente por ID o nroCasoAssistravel
+        let casoExistente = null
+        if (row.id) {
+          casoExistente = await prisma.caso.findUnique({
+            where: { id: Number(row.id) }
+          })
         }
 
-        // Crear el caso
-        await prisma.caso.create({
-          data: casoData
-        })
+        if (!casoExistente) {
+          casoExistente = await prisma.caso.findFirst({
+            where: { nroCasoAssistravel: casoData.nroCasoAssistravel }
+          })
+        }
+
+        if (casoExistente) {
+          // Actualizar el caso existente
+          await prisma.caso.update({
+            where: { id: casoExistente.id },
+            data: casoData
+          })
+          logs.push(`Caso actualizado: ${casoData.nroCasoAssistravel}`)
+        } else {
+          // Crear el caso si no existe
+          await prisma.caso.create({
+            data: casoData
+          })
+          logs.push(`Caso creado: ${casoData.nroCasoAssistravel}`)
+        }
 
         stats.exitosos++
         

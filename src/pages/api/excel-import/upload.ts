@@ -187,6 +187,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           } catch {
             processedRow[key] = value
           }
+        } else if (key === 'id' && value) {
+          processedRow[key] = Number(value)
         } else if (value === undefined || value === null || value === '') {
           processedRow[key] = null
         } else {
