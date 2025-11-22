@@ -12,7 +12,7 @@ import AutoCompleteInput from '@/components/ui/AutoCompleteInput'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { calcularSumaTotalDirecto, formatearMoneda } from '@/lib/calculations'
-import { formatDateForInput } from '@/lib/dateUtils'
+import { formatDateForInput, createSafeDate } from '@/lib/dateUtils'
 import { useMemo, useEffect } from 'react'
 import { 
   DocumentTextIcon, 
@@ -82,8 +82,7 @@ export default function CasoForm({
   // Efecto para resetear el formulario cuando cambie initialData
   useEffect(() => {
     if (initialData) {
-      
-      reset({
+      const values = {
         corresponsalId: initialData.corresponsalId || 0,
         nroCasoAssistravel: initialData.nroCasoAssistravel || '',
         nroCasoCorresponsal: initialData.nroCasoCorresponsal || '',
@@ -103,9 +102,10 @@ export default function CasoForm({
         estadoInterno: initialData.estadoInterno || 'ABIERTO',
         estadoDelCaso: initialData.estadoDelCaso || 'NO_FEE',
         observaciones: initialData.observaciones || ''
-      })
+      };
+      reset(values);
     }
-  }, [initialData, reset])
+  }, [initialData, reset]);
 
   const tieneFactura = watch('tieneFactura')
   const fee = watch('fee')
@@ -131,7 +131,7 @@ export default function CasoForm({
   useEffect(() => {
     if (fechaEmisionFactura && fechaEmisionFactura !== '') {
       try {
-        const fechaEmision = new Date(fechaEmisionFactura)
+        const fechaEmision = createSafeDate(fechaEmisionFactura)
         const fechaVencimiento = new Date(fechaEmision)
         fechaVencimiento.setDate(fechaVencimiento.getDate() + 30)
         
