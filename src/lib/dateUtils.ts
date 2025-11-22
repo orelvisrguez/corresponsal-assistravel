@@ -24,10 +24,10 @@ export function formatDateForInput(date: Date | string | null | undefined): stri
       return ''
     }
     
-    // Extraer componentes de fecha y formatear
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0') // Mes empieza en 0
-    const day = String(d.getDate()).padStart(2, '0')
+    // Extraer componentes de fecha y formatear usando UTC para evitar problemas de timezone
+    const year = d.getUTCFullYear()
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0') // Mes empieza en 0
+    const day = String(d.getUTCDate()).padStart(2, '0')
     
     return `${year}-${month}-${day}`
   } catch {
@@ -143,11 +143,11 @@ export function dateToInputString(date: Date): string {
     return ''
   }
   
-  // Extraer componentes locales de fecha y formatear
-  // Esto evita los problemas de timezone de toISOString()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0') // Mes empieza en 0
-  const day = String(date.getDate()).padStart(2, '0')
+  // Extraer componentes UTC de fecha y formatear
+  // Esto evita los problemas de timezone de toISOString() y asegura consistencia
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0') // Mes empieza en 0
+  const day = String(date.getUTCDate()).padStart(2, '0')
   
   return `${year}-${month}-${day}`
 }

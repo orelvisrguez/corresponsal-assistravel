@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: Date | string): string {
-  return new Date(date).toLocaleDateString('es-ES')
+  if (!date) return ''
+  const d = new Date(date)
+  // Usar UTC para evitar problemas de timezone
+  return d.toLocaleDateString('es-ES', { timeZone: 'UTC' })
 }
 
 /**
@@ -17,10 +20,10 @@ export function formatDate(date: Date | string): string {
  */
 export function toSentenceCase(text: string): string {
   if (!text || typeof text !== 'string') return text
-  
+
   // Convertir todo a minúsculas primero
   let result = text.toLowerCase()
-  
+
   // Dividir en palabras y capitalizar la primera letra de cada palabra
   result = result
     .split(' ')
@@ -33,7 +36,7 @@ export function toSentenceCase(text: string): string {
       return word.charAt(0).toUpperCase() + word.slice(1)
     })
     .join(' ')
-  
+
   return result
 }
 
@@ -80,24 +83,24 @@ export function formatCurrency(amount: number | string, currency: string = 'USD'
     if (value === null || value === undefined || value === '') {
       return 0
     }
-    
+
     if (typeof value === 'number') {
       return isFinite(value) ? value : 0
     }
-    
+
     if (typeof value === 'string') {
       // Limpiar el string: eliminar espacios y caracteres no numéricos (excepto punto y coma)
       let cleaned = value.trim().replace(/[^\d.,\-]/g, '')
-      
+
       // Si el string está vacío después de limpiar, retornar 0
       if (!cleaned) {
         return 0
       }
-      
+
       // Detectar y manejar diferentes formatos de número
       const lastComma = cleaned.lastIndexOf(',')
       const lastPeriod = cleaned.lastIndexOf('.')
-      
+
       // Si tiene tanto punto como coma, determinar cuál es el separador decimal
       if (lastComma > -1 && lastPeriod > -1) {
         if (lastComma > lastPeriod) {
@@ -112,33 +115,33 @@ export function formatCurrency(amount: number | string, currency: string = 'USD'
         cleaned = cleaned.replace(',', '.')
       }
       // Si solo tiene punto, asumir que es separador decimal (sin cambios)
-      
+
       const num = parseFloat(cleaned)
-      
+
       // Validar que el número es válido y razonable
       if (!isFinite(num) || isNaN(num)) {
         return 0
       }
-      
+
       // Si el número es demasiado grande (probablemente mal formateado), retornarlo tal como está
       // pero con un límite razonable
       if (Math.abs(num) > 1e15) { // Más de 1 cuatrillón probablemente es un error
         console.warn(`Número potencialmente mal formateado detectado: ${value} -> ${num}`)
         return 0 // Retornar 0 para evitar cálculos erróneos
       }
-      
+
       return num
     }
-    
+
     return 0
   }
-  
+
   const numAmount = parseFormattedNumber(amount)
   const formattedValue = new Intl.NumberFormat('es-ES', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(numAmount)
-  
+
   return `${formattedValue} ${currency}`
 }
 
@@ -210,9 +213,12 @@ export function formatDateForInput(date: Date | string | null | undefined): stri
   if (!date) return ''
   try {
     const d = new Date(date)
-    // Ajustar para el offset de zona horaria
-    d.setMinutes(d.getMinutes() + d.getTimezoneOffset())
-    return d.toISOString().split('T')[0]
+    // Usar métodos UTC para evitar problemas de timezone
+    // Esto asegura que 2025-11-22T00:00:00Z se formatee como 2025-11-22
+    const year = d.getUTCFullYear()
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   } catch (error) {
     return ''
   }
@@ -224,13 +230,13 @@ export function filterCasos(casos: any[], filters: any) {
     // Búsqueda por texto
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase()
-      const matchesSearch = 
+      const matchesSearch =
         caso.nroCasoAssistravel?.toLowerCase().includes(searchLower) ||
         caso.nroCasoCorresponsal?.toLowerCase().includes(searchLower) ||
         caso.pais?.toLowerCase().includes(searchLower) ||
         caso.observaciones?.toLowerCase().includes(searchLower) ||
         caso.corresponsal?.nombreCorresponsal?.toLowerCase().includes(searchLower)
-      
+
       if (!matchesSearch) return false
     }
 
@@ -270,7 +276,7 @@ export function filterCasos(casos: any[], filters: any) {
     if (filters.fechaDesde && filters.fechaDesde !== '') {
       let fechaCaso: Date | null = null
       const tipoFecha = filters.tipoFecha || 'fechaInicioCaso' // Default a fecha de inicio del caso
-      
+
       switch (tipoFecha) {
         case 'fechaInicioCaso':
           fechaCaso = caso.fechaInicioCaso ? new Date(caso.fechaInicioCaso) : null
@@ -287,7 +293,7 @@ export function filterCasos(casos: any[], filters: any) {
         default:
           fechaCaso = caso.fechaInicioCaso ? new Date(caso.fechaInicioCaso) : null
       }
-      
+
       if (fechaCaso) {
         const fechaDesde = new Date(filters.fechaDesde)
         if (fechaCaso < fechaDesde) return false
@@ -300,7 +306,7 @@ export function filterCasos(casos: any[], filters: any) {
     if (filters.fechaHasta && filters.fechaHasta !== '') {
       let fechaCaso: Date | null = null
       const tipoFecha = filters.tipoFecha || 'fechaInicioCaso' // Default a fecha de inicio del caso
-      
+
       switch (tipoFecha) {
         case 'fechaInicioCaso':
           fechaCaso = caso.fechaInicioCaso ? new Date(caso.fechaInicioCaso) : null
@@ -317,7 +323,7 @@ export function filterCasos(casos: any[], filters: any) {
         default:
           fechaCaso = caso.fechaInicioCaso ? new Date(caso.fechaInicioCaso) : null
       }
-      
+
       if (fechaCaso) {
         const fechaHasta = new Date(filters.fechaHasta)
         if (fechaCaso > fechaHasta) return false
@@ -345,7 +351,7 @@ export function filterCasos(casos: any[], filters: any) {
 // Función para filtrar corresponsales
 export function filterCorresponsales(corresponsales: any[], searchTerm: string) {
   if (!searchTerm) return corresponsales
-  
+
   const searchLower = searchTerm.toLowerCase()
   return corresponsales.filter(corresponsal => {
     return (
@@ -367,7 +373,7 @@ export function sanitizeForJson(obj: any): any {
   if (obj === null || obj === undefined) {
     return null
   }
-  
+
   // Manejar números problemáticos
   if (typeof obj === 'number') {
     if (isNaN(obj) || !isFinite(obj)) {
@@ -375,11 +381,11 @@ export function sanitizeForJson(obj: any): any {
     }
     return obj
   }
-  
+
   if (Array.isArray(obj)) {
     return obj.map(item => sanitizeForJson(item))
   }
-  
+
   if (typeof obj === 'object') {
     const sanitized: any = {}
     for (const [key, value] of Object.entries(obj)) {
@@ -387,6 +393,6 @@ export function sanitizeForJson(obj: any): any {
     }
     return sanitized
   }
-  
+
   return obj
 }
